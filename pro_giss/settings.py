@@ -79,8 +79,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'USER':'progiss_db_user',
+        'PASSWORD': 'UJr9lJj7FnzErUV8Pky8BJYr7rMdOlf9',
+        'HOST': 'dpg-cu386mi3esus73ddj920-a',
+        'PORT': '5432',
+
     }
 }
+
 
 
 # Password validation
