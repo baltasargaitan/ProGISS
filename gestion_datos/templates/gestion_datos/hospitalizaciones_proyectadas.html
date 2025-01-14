@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospitalizaciones Proyectadas</title>
+</head>
+<body>
+    <h1>Hospitalizaciones Proyectadas</h1>
+
+    <!-- Mostrar gráfico de hospitalizaciones por región -->
+    <h2>Hospitalizaciones Proyectadas por Región</h2>
+    <div>
+        {{ graph_region|safe }}
+    </div>
+
+    <!-- Mostrar gráfico de hospitalizaciones por grupo etario -->
+    <h2>Hospitalizaciones Proyectadas por Grupo Etario</h2>
+    <div>
+        {{ graph_grupo|safe }}
+    </div>
+
+    <!-- Si hay un error, mostrarlo -->
+    {% if error %}
+    <p style="color: red;">Error: {{ error }}</p>
+    {% endif %}
+</body>
+</html>
