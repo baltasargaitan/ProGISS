@@ -1,0 +1,51 @@
+Affiliate_ID;Age;Sex;Region;Chronic_Condition;Previous_Consultations;Previous_Hospitalizations;Previous_Medication_Cost;Enrolled_in_Program;Risk_Score;;Explicación de las columnas:
+AF-0001;54;Male;North;No;6;0;$ 32.405,80;Yes;0.34;;
+AF-0002;72;Female;South;Yes;4;1;$ 48.791,30;No;0.35;;1. Affiliate_ID: Identificador único del afiliado.
+AF-0003;39;Male;East;No;3;0;$ 12.451,20;Yes;0.36;;2. Age: Edad del afiliado (entre 18 y 85 años).
+AF-0004;26;Female;West;No;7;0;$ 22.204,50;No;0.37;;3. Sex: Género (Male o Female).
+AF-0005;63;Male;North;Yes;5;1;$ 39.806,70;Yes;0.38;;4. Region: Región de residencia (North, South, East, West).
+AF-0006;46;Female;East;No;2;0;$ 30.211,00;Yes;0.39;;5. Chronic_Condition: Si el afiliado tiene alguna condición crónica (Yes/No).
+AF-0007;58;Male;West;Yes;8;2;$ 47.125,00;No;0.40;;6. Previous_Consultations: Número de consultas médicas en el último año.
+AF-0008;34;Female;South;No;1;0;$ 16.903,00;Yes;0.41;;7. Previous_Hospitalizations: Número de hospitalizaciones previas.
+AF-0009;70;Male;North;Yes;10;3;$ 58.008,00;No;0.42;;8. Previous_Medication_Cost: Costo acumulado en medicamentos en el último año.
+AF-0010;22;Female;East;No;4;0;$ 21.205,00;Yes;0.43;;9. Enrolled_in_Program: Si está inscrito en un programa especial de salud (Yes/No).
+AF-0011;54;Male;North;No;6;0;$ 32.405,80;Yes;0.44;;10. Risk_Score: Puntuación de riesgo calculada (entre 0 y 1).
+AF-0012;72;Female;South;Yes;4;1;$ 48.791,30;No;0.45;;
+AF-0013;39;Male;East;No;3;0;$ 12.451,20;Yes;0.46;;
+AF-0014;26;Female;West;No;7;0;$ 22.204,50;No;0.47;;
+AF-0015;63;Male;North;Yes;5;1;$ 39.806,70;Yes;0.48;;
+AF-0016;55;Male;North;No;5;0;$ 35.646,38;Yes;0.49;;
+AF-0017;73;Female;South;Yes;3;1;$ 53.670,43;No;0.50;;
+AF-0018;40;Male;East;No;2;0;$ 13.696,32;Yes;0.51;;
+AF-0019;27;Female;West;No;6;0;$ 24.424,95;No;0.52;;
+AF-0020;64;Male;North;Yes;4;1;$ 43.787,37;Yes;0.53;;
+AF-0021;47;Female;East;No;1;0;$ 33.232,10;Yes;0.54;;
+AF-0022;59;Male;West;Yes;7;2;$ 51.837,50;No;0.55;;
+AF-0023;35;Female;South;No;0;0;$ 18.593,30;Yes;0.56;;
+AF-0024;71;Male;North;Yes;9;3;$ 63.808,80;No;0.57;;
+AF-0025;23;Female;East;No;3;0;$ 23.325,50;Yes;0.58;;
+AF-0026;55;Male;North;No;5;0;$ 35.646,38;Yes;0.59;;
+AF-0027;73;Female;South;Yes;3;1;$ 53.670,43;No;0.60;;
+AF-0028;40;Male;East;No;2;0;$ 13.696,32;Yes;0.61;;
+AF-0029;27;Female;West;No;6;0;$ 24.424,95;No;0.62;;
+AF-0030;64;Male;North;Yes;4;1;$ 43.787,37;Yes;0.63;;
+AF-0031;45;Male;North;No;5;0;$ 31.543,20;Yes;0.45;;
+AF-0032;67;Female;South;Yes;8;1;$ 42.986,70;No;0.72;;
+AF-0033;34;Male;East;No;3;0;$ 16.204,50;Yes;0.23;;
+AF-0034;29;Female;West;No;2;0;$ 18.768,90;No;0.18;;
+AF-0035;52;Male;North;Yes;10;2;$ 47.631,20;Yes;0.81;;
+AF-0036;40;Female;South;No;6;0;$ 29.873,40;No;0.36;;
+AF-0037;61;Male;East;Yes;9;1;$ 50.324,70;Yes;0.68;;
+AF-0038;25;Female;West;No;1;0;$ 11.208,90;Yes;0.14;;
+AF-0039;48;Male;North;Yes;7;1;$ 32.051,10;No;0.56;;
+AF-0040;36;Female;South;No;4;0;$ 21.105,40;Yes;0.31;;
+AF-0041;72;Male;East;Yes;12;3;$ 58.764,20;No;0.92;;
+AF-0042;39;Female;West;No;5;0;$ 28.767,70;Yes;0.43;;
+AF-0043;55;Male;North;Yes;8;1;$ 41.501,30;Yes;0.74;;
+AF-0044;42;Female;South;No;3;0;$ 15.453,40;No;0.27;;
+AF-0045;60;Male;East;Yes;11;2;$ 49.002,20;Yes;0.85;;
+AF-0046;24;Female;West;No;2;0;$ 13.004,40;No;0.19;;
+AF-0047;50;Male;North;Yes;9;1;$ 37.506,80;Yes;0.66;;
+AF-0048;32;Female;South;No;4;0;$ 20.053,30;No;0.33;;
+AF-0049;65;Male;East;Yes;7;2;$ 46.988,80;Yes;0.78;;
+AF-0050;27;Female;West;No;3;0;$ 15.009,90;No;0.24;;

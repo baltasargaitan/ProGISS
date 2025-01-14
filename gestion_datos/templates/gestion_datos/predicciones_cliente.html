@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Predicciones para {{ afiliado.affiliate_id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .info {
+            margin-bottom: 20px;
+        }
+
+        .info p {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+
+        .predictions {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .predictions p {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .back-button {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-button a {
+            padding: 10px 20px;
+            background-color: #008CBA;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .back-button a:hover {
+            background-color: #005f87;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Predicciones para el Afiliado {{ afiliado.affiliate_id }}</h1>
+
+    <div class="container">
+
+        <!-- Predicciones -->
+        <div class="predictions">
+            <h2>Predicciones</h2>
+            <p><strong>¿Hospitalización en el próximo año?</strong> {{ prediccion_hospitalizacion }}</p>
+            <p><strong>Número estimado de consultas médicas:</strong> {{ prediccion_consultas }}</p>
+        </div>
+
+        <!-- Botón de regreso -->
+        <div class="back-button">
+            <a href="{% url 'dashboard' %}">Volver al Dashboard</a>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resultados del Modelo Predictivo</title>
+</head>
+<body>
+    <h1>Resultados del Modelo Predictivo</h1>
+    <h2>Predicciones por Afiliado</h2>
+    <ul>
+        {% for id, prediccion in predicciones.items %}
+            <li>Afiliado {{ id }}: {{ prediccion }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Gráfico de Predicciones</h2>
+    <img src="data:image/png;base64,{{ grafico_base64 }}" alt="Gráfico de Predicciones">
+</body>
+</html>

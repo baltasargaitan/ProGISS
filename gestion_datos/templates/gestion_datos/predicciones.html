@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Predicciones</title>
+</head>
+<body>
+    <h1>Predicciones</h1>
+    <table border="1">
+        <tr>
+            <th>Afiliado</th>
+            <th>Predicción</th>
+        </tr>
+        {% for affiliate_id, prediction in predicciones.items %}
+        <tr>
+            <td>{{ affiliate_id }}</td>
+            <td>{{ prediction }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

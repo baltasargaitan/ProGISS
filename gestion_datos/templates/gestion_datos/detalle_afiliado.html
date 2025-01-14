@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Afiliado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .details {
+            margin-bottom: 20px;
+        }
+
+        .details p {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+
+        .back-button {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-button a {
+            padding: 10px 20px;
+            background-color: #008CBA;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .back-button a:hover {
+            background-color: #005f87;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Detalle del Afiliado: {{ afiliado.affiliate_id }}</h1>
+
+    <div class="container">
+        <div class="details">
+            <p><strong>Edad:</strong> {{ afiliado.age }}</p>
+            <p><strong>Sexo:</strong> {{ afiliado.sex }}</p>
+            <p><strong>Región:</strong> {{ afiliado.region }}</p>
+            <p><strong>Condición Crónica:</strong> {{ afiliado.chronic_condition|yesno:"Sí,No" }}</p>
+            <p><strong>Consultas Previas:</strong> {{ afiliado.previous_consultations }}</p>
+            <p><strong>Hospitalizaciones Previas:</strong> {{ afiliado.previous_hospitalizations }}</p>
+            <p><strong>Costo en Medicamentos:</strong> ${{ afiliado.previous_medication_cost }}</p>
+            <p><strong>Riesgo:</strong> {{ afiliado.risk_score }}</p>
+        </div>
+
+        <div class="back-button">
+            <a href="{% url 'dashboard' %}">Volver al Dashboard</a>
+        </div>
+    </div>
+
+</body>
+</html>

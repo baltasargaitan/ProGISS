@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ProGISS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #4caf50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        table th, table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+            color: #666;
+        }
+
+        table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .action-buttons a {
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            margin-right: 5px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .action-buttons a i {
+            margin-right: 5px;
+        }
+
+        .btn-details {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-details:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-predict {
+            background-color: #5a3651;
+            color: white;
+        }
+
+        .btn-predict:hover {
+            background-color: #ec67e5;
+        }
+
+        .btn-export, .btn-graph, .btn-seg {
+            text-decoration: underline;
+            padding: 10px 20px;
+            background-color: #367845;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-graph {
+            position: relative;
+            right: 400px;
+        }
+        
+        .btn-seg {
+
+            position: relative;
+            right: 800px;
+
+        }
+        a.btn-seg  {
+            background-color: #367845;
+
+
+        }
+
+        .btn-export:hover, .btn-graph:hover, .btn-seg {
+            background-color: #218838;
+        }
+
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .button-group button, .button-group a {
+            margin-right: 500px;  
+        }
+    </style>
+    <script>
+        function toggleSelectAll(source) {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"][name="afiliados"]');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = source.checked;
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard - ProGISS</h1>
+
+        <form method="post" action="{% url 'exportar_predicciones' %}">
+            {% csrf_token %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" onclick="toggleSelectAll(this)">
+                            <span class="select-all">Select All</span>
+                        </th>
+                        <th>Affiliate ID</th>
+                        <th>Region</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for afiliado in afiliados %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="afiliados" value="{{ afiliado.id }}">
+                        </td>
+                        <td>{{ afiliado.affiliate_id }}</td>
+                        <td>{{ afiliado.region }}</td>
+                        <td class="action-buttons">
+                            <a href="{% url 'detalle_afiliado' afiliado.id %}" class="btn-details">
+                                <i class="fas fa-info-circle"></i> Details
+                            </a>
+                            <a href="{% url 'predicciones_cliente' afiliado.id %}" class="btn-predict">
+                                <i class="fas fa-chart-line"></i> Predict
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="button-group">
+                <button type="submit" class="btn-export">
+                    <i class="fas fa-file-export"></i> Exportar Predicciones (.xlsx)
+                </button>
+                <a href="{% url 'hospitalizaciones_proyectadas' %}" class="btn-graph">
+                    <i class="fas fa-chart-line"></i> Ver Gráficos de Hospitalizaciones
+                </a>
+                <a href="{% url 'segmentacion' %}" class="btn-seg">
+                    <i class="fas fa-chart-line"></i> Ver Segmentación
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
