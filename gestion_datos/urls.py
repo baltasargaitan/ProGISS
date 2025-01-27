@@ -7,6 +7,7 @@ urlpatterns = [
     path('segmentacion/', views.segmentacion, name='segmentacion'),  # Vista para segmentación
     path('predicciones_cliente/<int:id>/', views.predicciones_cliente, name='predicciones_cliente'),  # Nueva ruta
     path('hospitalizaciones_proyectadas/', views.hospitalizaciones_proyectadas, name='hospitalizaciones_proyectadas'),
-
+   path('costos_medicos/', views.costos_medicos_proyectados, name='costos_medicos'),
     path('exportar_predicciones/', views.exportar_predicciones, name='exportar_predicciones'),
+    path('error/', views.error_view, name='error'),
 ]

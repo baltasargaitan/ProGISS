@@ -7,8 +7,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-!#pt*pqi8z64!^2gyrl=+1gxcn7id&2$n01(waw&8f0u!j7i($')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -65,14 +65,10 @@ if os.getenv('DJANGO_ENV') == 'production':  # If in production, use PostgreSQL
     }
 else:  # In development, also connect to the same remote PostgreSQL database
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
+      'default': {
+        'ENGINE': 'django.db.backends.sqlite3',  # Usamos SQLite por defecto
+        'NAME': BASE_DIR / 'db.sqlite3',  # Archivo de base de datos en la raíz del proyecto
+    }
     }
 
 # Password validation

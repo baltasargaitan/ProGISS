@@ -86,7 +86,7 @@
             background-color: #ec67e5;
         }
 
-        .btn-export, .btn-graph, .btn-seg {
+        .btn-export, .btn-graph, .btn-seg, .btn-cost {
             text-decoration: underline;
             padding: 10px 20px;
             background-color: #367845;
@@ -97,27 +97,24 @@
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .btn-graph {
             position: relative;
             right: 400px;
         }
-        
-        .btn-seg {
 
+        .btn-seg {
             position: relative;
             right: 800px;
-
         }
+
         a.btn-seg  {
             background-color: #367845;
-
-
         }
 
-        .btn-export:hover, .btn-graph:hover, .btn-seg {
+        .btn-export:hover, .btn-graph:hover, .btn-seg:hover, .btn-cost:hover {
             background-color: #218838;
         }
-
 
         .button-group {
             display: flex;
@@ -186,6 +183,9 @@
                 </a>
                 <a href="{% url 'segmentacion' %}" class="btn-seg">
                     <i class="fas fa-chart-line"></i> Ver Segmentación
+                </a>
+                <a href="{% url 'costos_medicos' %}" class="btn-cost">
+                    <i class="fas fa-dollar-sign"></i> Ver Costos Médicos
                 </a>
             </div>
         </form>

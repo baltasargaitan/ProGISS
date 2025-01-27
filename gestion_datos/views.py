@@ -313,3 +313,72 @@ def predicciones_cliente(request, id):
         'prediccion_hospitalizacion': "Yes" if prediccion_hospitalizacion == 1 else "No",
         'prediccion_consultas': round(prediccion_consultas, 2)
     })
+
+import joblib
+import pandas as pd
+import plotly.express as px
+from django.shortcuts import render
+from .models import Afiliado
+import joblib
+import pandas as pd
+import plotly.express as px
+from django.shortcuts import render
+from .models import Afiliado
+
+def costos_medicos_proyectados(request):
+    """
+    Predice los costos de medicamentos futuros y los agrupa por región y grupo etario.
+    """
+    # Cargar el modelo de predicción de costos de medicamentos
+    random_forest_model = joblib.load('random_forest_model.pkl')  # Asegúrate de que la ruta sea correcta
+
+    # Obtener los datos de los afiliados
+    afiliados = Afiliado.objects.all()
+    data = pd.DataFrame(list(afiliados.values('affiliate_id', 'age', 'previous_hospitalizations', 'previous_medication_cost', 'previous_consultations', 'region')))
+
+    # Realizar la predicción de costos de medicamentos solo con las columnas correctas
+    # Asegúrate de usar las mismas columnas que usaste para entrenar el modelo
+    X = data[['age', 'previous_hospitalizations', 'previous_medication_cost']]  # Usa las mismas columnas que en el entrenamiento
+    data['costo_medico_predicho'] = random_forest_model.predict(X)
+
+    # Agrupar los costos proyectados por región
+    costos_por_region = data.groupby('region')['costo_medico_predicho'].sum().reset_index()
+
+    # Crear el gráfico de costos de medicamentos proyectados por región
+    fig_region = px.bar(
+        costos_por_region,
+        x='region',
+        y='costo_medico_predicho',
+        title='Costos Proyectados de Medicamentos por Región',
+        labels={'costo_medico_predicho': 'Costo de Medicamentos Proyectado'},
+        color='region'
+    )
+
+    # Agrupar los costos proyectados por grupo de edad
+    data['grupo_etario'] = pd.cut(data['age'], bins=[0, 18, 40, 60, 100], labels=['0-18', '19-40', '41-60', '61+'])
+    costos_por_edad = data.groupby('grupo_etario')['costo_medico_predicho'].sum().reset_index()
+
+    # Crear el gráfico de costos de medicamentos proyectados por grupo etario
+    fig_edad = px.bar(
+        costos_por_edad,
+        x='grupo_etario',
+        y='costo_medico_predicho',
+        title='Costos Proyectados de Medicamentos por Grupo Etario',
+        labels={'costo_medico_predicho': 'Costo de Medicamentos Proyectado'},
+        color='grupo_etario'
+    )
+
+    # Renderizar los gráficos en la plantilla
+    return render(request, 'gestion_datos/costos_medicos.html', {
+        'fig_region': fig_region.to_html(full_html=False),
+        'fig_edad': fig_edad.to_html(full_html=False)
+    })
+
+
+
+
+
+
+
+def error_view(request, message="Algo salió mal."):
+    return render(request, 'error.html', {'message': message})

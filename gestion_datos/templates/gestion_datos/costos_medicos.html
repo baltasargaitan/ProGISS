@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Costos Proyectados de Medicamentos</title>
+    <!-- Incluir Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Costos Proyectados de Medicamentos</h1>
+
+    <!-- Gráfico de costos por región -->
+    <div>
+        <h2>Costos Proyectados por Región</h2>
+        <div>{{ fig_region|safe }}</div>
+    </div>
+
+    <!-- Gráfico de costos por grupo etario -->
+    <div>
+        <h2>Costos Proyectados por Grupo Etario</h2>
+        <div>{{ fig_edad|safe }}</div>
+    </div>
+
+</body>
+</html>
