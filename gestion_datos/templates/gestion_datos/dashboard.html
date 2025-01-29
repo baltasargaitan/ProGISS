@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,6 +53,8 @@
             align-items: center;
             font-size: 16px;
             transition: background-color 0.3s ease;
+            align-items: center;
+            align-content: center;
         }
 
         .sidebar a:hover {
@@ -61,6 +64,25 @@
         .sidebar a i {
             margin-right: 15px;
         }
+
+        .sidebar .logo {
+            width: 60px;
+            height: 60px;
+            background-color: #ecf0f1;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+
+        }
+
+        .sidebar .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
 
         /* Main Content */
         .main-content {
@@ -95,19 +117,6 @@
             color: #2c3e50;
             font-weight: 400;
             white-space: normal; /* Allow the text to wrap */
-        }
-
-        /* New Component for Icon Below Description */
-        .icon-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .icon-container img {
-            width: 80px; /* Control icon size */
-            height: 80px;
-            object-fit: cover;
         }
 
         /* Affiliate List Container Styling (Modern Design) */
@@ -206,10 +215,6 @@
             .affiliate-list-container {
                 margin-left: 0;
             }
-
-            .icon-container {
-                margin-top: 10px;
-            }
         }
     </style>
 </head>
@@ -217,7 +222,13 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2>ProGISS Dashboard</h2>
+
+        <div class="logo">
+            <img src="{% static 'favicon.ico' %}" alt="ProGISS Logo">
+        </div>
+
+        <h2>ProGISS</h2>
+
         <a href="javascript:void(0)" class="btn" onclick="toggleAffiliateList()">
             <i class="fas fa-users"></i> Mostrar Afiliados
         </a>
@@ -233,6 +244,7 @@
         <a href="{% url 'costos_totales_proyectados' %}" class="btn">
             <i class="fas fa-dollar-sign"></i> Ver Costos Totales Proyectados
         </a>
+        
     </div>
 
     <!-- Main Content -->
@@ -244,11 +256,6 @@
             <div id="project-description" class="typing-animation">
                 <!-- This text will be written out using JavaScript -->
             </div>
-        </div>
-
-        <!-- New Icon Component Below Description -->
-        <div class="icon-container">
-            <img src="{% static 'favicon.ico' %}" alt="ProGISS Icon">
         </div>
 
         <!-- Affiliate List Table (Initially Hidden) -->
