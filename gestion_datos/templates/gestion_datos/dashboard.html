@@ -1,5 +1,3 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,6 +96,19 @@
             white-space: normal; /* Allow the text to wrap */
         }
 
+        /* New Component for Icon Below Description */
+        .icon-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .icon-container img {
+            width: 80px; /* Control icon size */
+            height: 80px;
+            object-fit: cover;
+        }
+
         /* Affiliate List Container Styling (Modern Design) */
         .affiliate-list-container {
             margin-top: 20px;
@@ -194,6 +205,10 @@
             .affiliate-list-container {
                 margin-left: 0;
             }
+
+            .icon-container {
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
@@ -217,7 +232,6 @@
         <a href="{% url 'costos_totales_proyectados' %}" class="btn">
             <i class="fas fa-dollar-sign"></i> Ver Costos Totales Proyectados
         </a>
-        
     </div>
 
     <!-- Main Content -->
@@ -229,6 +243,11 @@
             <div id="project-description" class="typing-animation">
                 <!-- This text will be written out using JavaScript -->
             </div>
+        </div>
+
+        <!-- New Icon Component Below Description -->
+        <div class="icon-container">
+            <img src="{% static 'favicon.ico' %}" alt="ProGISS Icon">
         </div>
 
         <!-- Affiliate List Table (Initially Hidden) -->
