@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Segmentación de Niveles de Riesgo</title>
+    <title>Costos Totales Proyectados</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -130,28 +130,31 @@
 </head>
 <body>
     <div class="container">
-        <h1>Segmentación de Niveles de Riesgo</h1>
+        <h1>Costos Totales Proyectados</h1>
 
-        <!-- Resumen de datos -->
+        <!-- Resumen de costos proyectados por región -->
         <div class="summary">
             <div class="card">
-                <h2>{{ riesgo_bajo }}</h2>
-                <p>Afiliados de Riesgo Bajo</p>
+                <h2>{{ region1_total }}</h2>
+                <p>Total proyectado - Región 1</p>
             </div>
             <div class="card">
-                <h2>{{ riesgo_medio }}</h2>
-                <p>Afiliados de Riesgo Medio</p>
+                <h2>{{ region2_total }}</h2>
+                <p>Total proyectado - Región 2</p>
             </div>
             <div class="card">
-                <h2>{{ riesgo_alto }}</h2>
-                <p>Afiliados de Riesgo Alto</p>
+                <h2>{{ region3_total }}</h2>
+                <p>Total proyectado - Región 3</p>
             </div>
         </div>
 
-        <!-- Gráfico -->
+        <!-- Gráfico de costos totales proyectados por región -->
         <div class="chart-container">
-            <h2>Distribución de Niveles de Riesgo</h2>
-            <img src="data:image/png;base64,{{ grafico_base64 }}" alt="Gráfico de Segmentación">
+            <h2>Distribución de Costos Totales Proyectados</h2>
+            <div>
+                <!-- Aquí se inserta el gráfico interactivo -->
+                {{ graph_region|safe }}
+            </div>
         </div>
 
         <!-- Botón de regreso -->

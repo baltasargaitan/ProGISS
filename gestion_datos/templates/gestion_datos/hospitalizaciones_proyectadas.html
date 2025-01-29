@@ -4,25 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hospitalizaciones Proyectadas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 0;
+            height: 80%; /* Asegura que el body ocupe toda la altura de la pantalla */
+            display: flex;
+            justify-content: center; /* Centra horizontalmente */
+            align-items: center; /* Centra verticalmente */
+        }
+
+        .main-content {
+            width: 100%;
+            max-width: 100%; /* Limita el ancho máximo del contenido */
+            padding: 40px 20px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 30px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 22px;
+            color: #2c3e50;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .content-container {
+            margin-bottom: 40px;
+        }
+
+        .content-container div {
+            margin-bottom: 30px;
+        }
+
+        .content-container .error {
+            color: red;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .back-button {
+            background-color: #3498db; /* Azul del dashboard */
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin: 20px 0;
+            text-align: center;
+            display: block;
+            width: 100%;
+            max-width: 300px; /* Establece un ancho máximo para el botón */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9; /* Azul más oscuro */
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-button i {
+            margin-right: 10px;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hospitalizaciones Proyectadas</h1>
 
-    <!-- Mostrar gráfico de hospitalizaciones por región -->
-    <h2>Hospitalizaciones Proyectadas por Región</h2>
-    <div>
-        {{ graph_region|safe }}
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Hospitalizaciones Proyectadas</h1>
+
+        <div class="content-container">
+            <h2>Hospitalizaciones Proyectadas por Región</h2>
+            <div>
+                {{ graph_region|safe }}
+            </div>
+        </div>
+
+        <div class="content-container">
+            <h2>Hospitalizaciones Proyectadas por Grupo Etario</h2>
+            <div>
+                {{ graph_grupo|safe }}
+            </div>
+        </div>
+
+        {% if error %}
+            <div class="error">
+                <p>Error: {{ error }}</p>
+            </div>
+        {% endif %}
+
+        <!-- Botón para volver al Dashboard -->
+        <a href="{% url 'dashboard' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
     </div>
 
-    <!-- Mostrar gráfico de hospitalizaciones por grupo etario -->
-    <h2>Hospitalizaciones Proyectadas por Grupo Etario</h2>
-    <div>
-        {{ graph_grupo|safe }}
-    </div>
-
-    <!-- Si hay un error, mostrarlo -->
-    {% if error %}
-    <p style="color: red;">Error: {{ error }}</p>
-    {% endif %}
 </body>
 </html>

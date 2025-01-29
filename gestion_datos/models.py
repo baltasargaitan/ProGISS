@@ -24,12 +24,17 @@ class EstudioProcedimiento(models.Model):
         ('RM', 'Resonancia Magnética'),
         ('TAC', 'Tomografía Axial Computarizada'),
         ('RX', 'Radiografía'),
-        # Agrega más tipos según sea necesario
+        ('RML', 'Resonancia Magnética Lumbar'),
+        ('RTX', 'Radiografía de Tórax de Rutina'),
+        ('EM', 'Ecografía Mamaria Anual'),
+        ('ECGR', 'Electrocardiograma de Rutina'),
+        ('TCC', 'Tomografía Computada de Cráneo'),
+        ('PSA', 'Test de PSA Sin Síntomas'),
     ]
     
     procedure_id = models.CharField(max_length=20, unique=True)
     patient = models.ForeignKey(Afiliado, on_delete=models.CASCADE, related_name="procedures")
-    study_type = models.CharField(max_length=3, choices=STUDY_TYPES)
+    study_type = models.CharField(max_length=4, choices=STUDY_TYPES)
     requested_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default='Pendiente')
     cost = models.DecimalField(max_digits=10, decimal_places=2)
@@ -37,6 +42,7 @@ class EstudioProcedimiento(models.Model):
 
     def __str__(self):
         return f"Estudio {self.study_type} - {self.patient.affiliate_id}"
+
 
 
 '------------------------------------------------------------'

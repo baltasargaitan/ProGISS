@@ -8,187 +8,300 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa;
-            color: #333;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            background-color: #f4f5f7;
+            min-height: 100vh;
+            flex-direction: column;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        /* Sidebar Styles */
+        .sidebar {
+            width: 270px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #2c3e50;
+            padding-top: 30px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 30px;
+            font-size: 22px;
+            color: #ecf0f1;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            padding: 15px;
+            background-color: #34495e;
+            margin: 10px 0;
+            color: white;
+            border-radius: 6px;
+            display: flex;
             align-items: center;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: #1abc9c;
+        }
+
+        .sidebar a i {
+            margin-right: 15px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 270px;
+            padding: 20px;
+            flex-grow: 1;
         }
 
         h1 {
-            text-align: center;
-            font-weight: 700;
+            font-size: 30px;
+            font-weight: 600;
+            color: #2c3e50;
             margin-bottom: 20px;
-            color: #4caf50;
+            text-align: center;
         }
 
-        table {
+        /* Container for writing animation */
+        .typing-container {
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .typing-animation {
+            font-size: 18px;
+            color: #2c3e50;
+            font-weight: 400;
+            white-space: normal; /* Allow the text to wrap */
+        }
+
+        /* Affiliate List Container Styling (Modern Design) */
+        .affiliate-list-container {
+            margin-top: 20px;
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            display: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            position: relative;
+            left: 10%;
+            width: 70%;
+        }
+
+        .affiliate-list-container.active {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .affiliate-button {
+            background-color: #1abc9c;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .affiliate-button:hover {
+            background-color: #16a085;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .affiliate-button i {
+            margin-right: 10px;
+        }
+
+        .affiliate-list {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 14px;
+            margin-top: 20px;
         }
 
-        table th, table td {
+        .affiliate-list th, .affiliate-list td {
+            padding: 12px;
             text-align: left;
-            padding: 10px;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid #ddd;
+            color: #333;
         }
 
-        table th {
-            background-color: #f2f2f2;
-            color: #666;
-        }
-
-        table tr:hover {
-            background-color: #f9f9f9;
+        .affiliate-list th {
+            background-color: #f7f7f7;
         }
 
         .action-buttons a {
             text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 5px;
-            font-size: 13px;
-            margin-right: 5px;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .action-buttons a i {
-            margin-right: 5px;
-        }
-
-        .btn-details {
-            background-color: #007bff;
+            padding: 8px 16px;
+            margin-right: 10px;
+            background-color: #1abc9c;
             color: white;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
         }
 
-        .btn-details:hover {
-            background-color: #0056b3;
+        .action-buttons a:hover {
+            background-color: #16a085;
         }
 
-        .btn-predict {
-            background-color: #5a3651;
-            color: white;
-        }
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding-left: 10px;
+            }
 
-        .btn-predict:hover {
-            background-color: #ec67e5;
-        }
+            .main-content {
+                margin-left: 0;
+            }
 
-        .btn-export, .btn-graph, .btn-seg, .btn-cost {
-            text-decoration: underline;
-            padding: 10px 20px;
-            background-color: #367845;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+            .typing-container {
+                padding: 10px;
+            }
 
-        .btn-graph {
-            position: relative;
-            right: 400px;
-        }
-
-        .btn-seg {
-            position: relative;
-            right: 800px;
-        }
-
-        a.btn-seg  {
-            background-color: #367845;
-        }
-
-        .btn-export:hover, .btn-graph:hover, .btn-seg:hover, .btn-cost:hover {
-            background-color: #218838;
-        }
-
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        .button-group button, .button-group a {
-            margin-right: 500px;  
+            .affiliate-list-container {
+                margin-left: 0;
+            }
         }
     </style>
-    <script>
-        function toggleSelectAll(source) {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"][name="afiliados"]');
-            checkboxes.forEach(function(checkbox) {
-                checkbox.checked = source.checked;
-            });
-        }
-    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Dashboard - ProGISS</h1>
 
-        <form method="post" action="{% url 'exportar_predicciones' %}">
-            {% csrf_token %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>
-                            <input type="checkbox" onclick="toggleSelectAll(this)">
-                            <span class="select-all">Select All</span>
-                        </th>
-                        <th>Affiliate ID</th>
-                        <th>Region</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for afiliado in afiliados %}
-                    <tr>
-                        <td>
-                            <input type="checkbox" name="afiliados" value="{{ afiliado.id }}">
-                        </td>
-                        <td>{{ afiliado.affiliate_id }}</td>
-                        <td>{{ afiliado.region }}</td>
-                        <td class="action-buttons">
-                            <a href="{% url 'detalle_afiliado' afiliado.id %}" class="btn-details">
-                                <i class="fas fa-info-circle"></i> Details
-                            </a>
-                            <a href="{% url 'predicciones_cliente' afiliado.id %}" class="btn-predict">
-                                <i class="fas fa-chart-line"></i> Predict
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>ProGISS Dashboard</h2>
+        <a href="javascript:void(0)" class="btn" onclick="toggleAffiliateList()">
+            <i class="fas fa-users"></i> Mostrar Afiliados
+        </a>
+        <a href="{% url 'hospitalizaciones_proyectadas' %}" class="btn">
+            <i class="fas fa-chart-line"></i> Ver Gráficos de Hospitalizaciones
+        </a>
+        <a href="{% url 'segmentacion' %}" class="btn">
+            <i class="fas fa-palette"></i> Ver Segmentación
+        </a>
+        <a href="{% url 'costos_medicos' %}" class="btn">
+            <i class="fas fa-dollar-sign"></i> Ver Costos Médicos
+        </a>
+        <a href="{% url 'costos_totales_proyectados' %}" class="btn">
+            <i class="fas fa-dollar-sign"></i> Ver Costos Totales Proyectados
+        </a>
+        
+    </div>
 
-            <div class="button-group">
-                <button type="submit" class="btn-export">
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Bienvenido a ProGISS</h1>
+
+        <!-- Writing Animation in Container -->
+        <div class="typing-container" id="description-container">
+            <div id="project-description" class="typing-animation">
+                <!-- This text will be written out using JavaScript -->
+            </div>
+        </div>
+
+        <!-- Affiliate List Table (Initially Hidden) -->
+        <div class="affiliate-list-container" id="affiliate-list">
+            <form method="post" action="{% url 'exportar_predicciones' %}">
+                {% csrf_token %}
+                <table class="affiliate-list">
+                    <thead>
+                        <tr>
+                            <th>Affiliate ID</th>
+                            <th>Region</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for afiliado in afiliados %}
+                        <tr>
+                            <td>{{ afiliado.affiliate_id }}</td>
+                            <td>{{ afiliado.region }}</td>
+                            <td class="action-buttons">
+                                <a href="{% url 'detalle_afiliado' afiliado.id %}">
+                                    <i class="fas fa-info-circle"></i> Detalles
+                                </a>
+                                <a href="{% url 'predicciones_cliente' afiliado.id %}">
+                                    <i class="fas fa-chart-line"></i> Predecir
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit" class="affiliate-button">
                     <i class="fas fa-file-export"></i> Exportar Predicciones (.xlsx)
                 </button>
-                <a href="{% url 'hospitalizaciones_proyectadas' %}" class="btn-graph">
-                    <i class="fas fa-chart-line"></i> Ver Gráficos de Hospitalizaciones
-                </a>
-                <a href="{% url 'segmentacion' %}" class="btn-seg">
-                    <i class="fas fa-chart-line"></i> Ver Segmentación
-                </a>
-                <a href="{% url 'costos_medicos' %}" class="btn-cost">
-                    <i class="fas fa-dollar-sign"></i> Ver Costos Médicos
-                </a>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
+
+    <script>
+        // Text to be displayed
+        const text = "ProGISS es un sistema inteligente de gestión de seguros de salud que utiliza tecnologías avanzadas como la inteligencia artificial y el análisis predictivo para optimizar la cobertura de salud de los afiliados. Este sistema permite la segmentación de riesgos, la predicción de hospitalizaciones y la estimación de costos médicos, mejorando la calidad del servicio y reduciendo costos innecesarios. Además, anticipa las necesidades de atención médica, garantizando una cobertura eficiente, justa y sostenible para los afiliados.";
+
+        // Function to animate the typing effect
+        function typeText(elementId, text, speed) {
+            let i = 0;
+            let element = document.getElementById(elementId);
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        // Start the typing animation
+        typeText('project-description', text, 50);
+
+        // Toggle Affiliate List
+        function toggleAffiliateList() {
+            var affiliateList = document.getElementById("affiliate-list");
+            var descriptionContainer = document.getElementById("description-container");
+
+            // Toggle visibility of affiliate list and description
+            if (affiliateList.style.display === "none" || affiliateList.style.display === "") {
+                affiliateList.style.display = "block";
+                affiliateList.classList.add('active');
+                descriptionContainer.style.display = "none";
+            } else {
+                affiliateList.style.display = "none";
+                affiliateList.classList.remove('active');
+                descriptionContainer.style.display = "block";
+            }
+        }
+    </script>
+
 </body>
 </html>

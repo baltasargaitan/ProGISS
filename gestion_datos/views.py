@@ -8,22 +8,8 @@ import pandas as pd
 import joblib
 from io import BytesIO
 import base64
-import csv
-from django.http import HttpResponse
-import joblib
-import pandas as pd
-from .models import Afiliado
 from openpyxl import Workbook
-from django.http import HttpResponse
-import joblib
-import pandas as pd
-from .models import Afiliado
 import plotly.express as px
-import joblib
-import pandas as pd
-from django.shortcuts import render
-from .models import Afiliado
-
 
 # -------------------------------
 # Vista de inicio
@@ -34,8 +20,9 @@ def inicio(request):
     """
     return HttpResponse("<h1>Bienvenido a ProGISS</h1><p>Esta es la página inicial de la aplicación.</p>")
 
-
-
+# -------------------------------
+# Vista de detalle de afiliado
+# -------------------------------
 def detalle_afiliado(request, id):
     """
     Muestra los detalles de un afiliado específico basado en su ID.
@@ -88,28 +75,19 @@ def consultas_categoria(request):
 # -------------------------------
 # Hospitalizaciones Proyectadas
 # -------------------------------
-
-
 def hospitalizaciones_proyectadas(request):
     """
     Predice hospitalizaciones futuras y las agrupa por región y grupo etario.
     """
-    # Cargar el modelo de predicción
     logistic_model = joblib.load('logistic_model.pkl')
-
-    # Obtener los datos de los afiliados
     afiliados = Afiliado.objects.all()
     data = pd.DataFrame(list(afiliados.values('id', 'age', 'previous_consultations', 'previous_medication_cost', 'region')))
 
-    # Realizar la predicción de hospitalizaciones
     data['hospitalizacion_predicha'] = logistic_model.predict(
-        data[['age', 'previous_consultations', 'previous_medication_cost']]
-    )
-
-    # Agrupar hospitalizaciones por región
+        data[['age', 'previous_consultations', 'previous_medication_cost']])
+    
     hospitalizaciones_por_region = data.groupby('region')['hospitalizacion_predicha'].sum().reset_index()
 
-    # Crear el gráfico de hospitalizaciones por región
     fig_region = px.bar(
         hospitalizaciones_por_region,
         x='region',
@@ -118,13 +96,11 @@ def hospitalizaciones_proyectadas(request):
         labels={'hospitalizacion_predicha': 'Hospitalizaciones Proyectadas', 'region': 'Región'}
     )
 
-    # Agrupar hospitalizaciones por grupo etario
     data['grupo_etario'] = pd.cut(
         data['age'], bins=[0, 30, 50, 100], labels=['Menores de 30', '30-50', 'Mayores de 50']
     )
     hospitalizaciones_por_grupo = data.groupby('grupo_etario')['hospitalizacion_predicha'].sum().reset_index()
 
-    # Crear el gráfico de hospitalizaciones por grupo etario
     fig_grupo = px.bar(
         hospitalizaciones_por_grupo,
         x='grupo_etario',
@@ -133,11 +109,9 @@ def hospitalizaciones_proyectadas(request):
         labels={'hospitalizacion_predicha': 'Hospitalizaciones Proyectadas', 'grupo_etario': 'Grupo Etario'}
     )
 
-    # Convertir los gráficos a HTML para integrarlos en la plantilla
     graph_region = fig_region.to_html(full_html=False)
     graph_grupo = fig_grupo.to_html(full_html=False)
 
-    # Pasar los gráficos y los datos a la plantilla
     return render(request, 'gestion_datos/hospitalizaciones_proyectadas.html', {
         'hospitalizaciones_por_region': hospitalizaciones_por_region.to_dict(orient='records'),
         'hospitalizaciones_por_grupo': hospitalizaciones_por_grupo.to_dict(orient='records'),
@@ -145,29 +119,21 @@ def hospitalizaciones_proyectadas(request):
         'graph_grupo': graph_grupo,
     })
 
-
-
+# -------------------------------
+# Exportar Predicciones
+# -------------------------------
 def exportar_predicciones(request):
     """
-    Genera un archivo Excel con predicciones para los afiliados seleccionados,
-    sin caracteres especiales para compatibilidad.
+    Genera un archivo Excel con predicciones para todos los afiliados.
     """
     if request.method == "POST":
-        afiliado_ids = request.POST.getlist('afiliados')
-
-        if not afiliado_ids:
-            return HttpResponse("No affiliates selected.", content_type="text/plain")
-
-        # Cargar modelos entrenados
         logistic_model = joblib.load('logistic_model.pkl')
-        random_forest_model = joblib.load('random_forest_model.pkl')
+        random_forest_model_consultas = joblib.load('random_forest_model_consultas.pkl')
 
-        # Crear un archivo Excel
         workbook = Workbook()
         worksheet = workbook.active
         worksheet.title = "Predictions"
 
-        # Escribir encabezados (sin caracteres especiales)
         headers = [
             'Affiliate_ID', 'Age', 'Region', 'Previous_Consultations',
             'Previous_Hospitalizations', 'Medication_Cost',
@@ -175,11 +141,9 @@ def exportar_predicciones(request):
         ]
         worksheet.append(headers)
 
-        # Generar predicciones
-        for afiliado_id in afiliado_ids:
-            afiliado = Afiliado.objects.get(id=afiliado_id)
+        afiliados = Afiliado.objects.all()
 
-            # Crear DataFrame con datos del afiliado
+        for afiliado in afiliados:
             data = pd.DataFrame([{
                 'age': afiliado.age,
                 'previous_consultations': afiliado.previous_consultations,
@@ -187,17 +151,13 @@ def exportar_predicciones(request):
                 'previous_medication_cost': afiliado.previous_medication_cost,
             }])
 
-            # Predicciones
             prediccion_hospitalizacion = logistic_model.predict(
-                data[['age', 'previous_consultations', 'previous_medication_cost']]
-            )[0]
+                data[['age', 'previous_consultations', 'previous_medication_cost']])[0]
 
-            prediccion_consultas = random_forest_model.predict(
-                data[['age', 'previous_hospitalizations', 'previous_medication_cost']]
-            )[0]
+            prediccion_consultas = random_forest_model_consultas.predict(
+                data[['age', 'previous_hospitalizations', 'previous_medication_cost']])[0]
 
-            # Escribir fila en Excel (sin caracteres especiales)
-            worksheet.append([
+            worksheet.append([  
                 afiliado.affiliate_id, afiliado.age, afiliado.region,
                 afiliado.previous_consultations, afiliado.previous_hospitalizations,
                 afiliado.previous_medication_cost,
@@ -205,13 +165,14 @@ def exportar_predicciones(request):
                 round(prediccion_consultas, 2)
             ])
 
-        # Configurar la respuesta HTTP con el archivo Excel
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename="affiliate_predictions.xlsx"'
         workbook.save(response)
         return response
+
+    return HttpResponse("Invalid request method.", content_type="text/plain")
 
 # -------------------------------
 # Exportar Datos para BI
@@ -246,7 +207,9 @@ def exportar_datos_csv(request):
 
     return response
 
-
+# -------------------------------
+# Segmentación de Afiliados
+# -------------------------------
 def segmentacion(request):
     """
     Segmenta a los afiliados en niveles de riesgo según criterios predefinidos.
@@ -259,7 +222,6 @@ def segmentacion(request):
         previous_medication_cost__gt=1000
     ).count()
 
-    # Crear un gráfico de pastel para la segmentación
     labels = ['Riesgo Bajo', 'Riesgo Medio', 'Riesgo Alto']
     sizes = [riesgo_bajo, riesgo_medio, riesgo_alto]
     colors = ['green', 'orange', 'red']
@@ -268,7 +230,6 @@ def segmentacion(request):
     plt.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors)
     plt.title('Distribución de Niveles de Riesgo')
 
-    # Convertir gráfico a formato base64 para mostrar en HTML
     buffer = BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
@@ -283,7 +244,9 @@ def segmentacion(request):
         'grafico_base64': image_base64
     })
 
-
+# -------------------------------
+# Predicciones para Cliente Específico
+# -------------------------------
 def predicciones_cliente(request, id):
     """
     Genera predicciones específicas para un afiliado basado en su ID.
@@ -294,9 +257,8 @@ def predicciones_cliente(request, id):
         return HttpResponse("Afiliado no encontrado", status=404)
 
     logistic_model = joblib.load('logistic_model.pkl')
-    random_forest_model = joblib.load('random_forest_model.pkl')
+    random_forest_model_consultas = joblib.load('random_forest_model_consultas.pkl')
 
-    # Crear DataFrame con los datos del afiliado
     data = pd.DataFrame([{
         'age': afiliado.age,
         'previous_consultations': afiliado.previous_consultations,
@@ -304,9 +266,8 @@ def predicciones_cliente(request, id):
         'previous_medication_cost': afiliado.previous_medication_cost
     }])
 
-    # Predicciones
     prediccion_hospitalizacion = logistic_model.predict(data[['age', 'previous_consultations', 'previous_medication_cost']])[0]
-    prediccion_consultas = random_forest_model.predict(data[['age', 'previous_hospitalizations', 'previous_medication_cost']])[0]
+    prediccion_consultas = random_forest_model_consultas.predict(data[['age', 'previous_hospitalizations', 'previous_medication_cost']])[0]
 
     return render(request, 'gestion_datos/predicciones_cliente.html', {
         'afiliado': afiliado,
@@ -314,32 +275,43 @@ def predicciones_cliente(request, id):
         'prediccion_consultas': round(prediccion_consultas, 2)
     })
 
-import joblib
-import pandas as pd
-import plotly.express as px
+# -------------------------------
+# Costos Médicos Proyectados
+# -------------------------------
 from django.shortcuts import render
 from .models import Afiliado
-import joblib
 import pandas as pd
+import joblib
 import plotly.express as px
-from django.shortcuts import render
-from .models import Afiliado
 
+# -------------------------------
+# Costos Médicos Proyectados
+# -------------------------------
+from django.shortcuts import render
+from .models import Afiliado
+import pandas as pd
+import joblib
+import plotly.express as px
+import logging
+
+# -------------------------------
+# Costos Médicos Proyectados
+# -------------------------------
 def costos_medicos_proyectados(request):
     """
     Predice los costos de medicamentos futuros y los agrupa por región y grupo etario.
     """
-    # Cargar el modelo de predicción de costos de medicamentos
-    random_forest_model = joblib.load('random_forest_model.pkl')  # Asegúrate de que la ruta sea correcta
+    # Cargar el modelo entrenado para predecir costos de medicamentos
+    random_forest_model_costos = joblib.load('random_forest_model_costos.pkl')
 
     # Obtener los datos de los afiliados
     afiliados = Afiliado.objects.all()
-    data = pd.DataFrame(list(afiliados.values('affiliate_id', 'age', 'previous_hospitalizations', 'previous_medication_cost', 'previous_consultations', 'region')))
+    data = pd.DataFrame(list(afiliados.values('affiliate_id', 'age', 'previous_hospitalizations', 'previous_consultations', 'region')))
+    print(f"Datos de afiliados: {data.head()}")
 
-    # Realizar la predicción de costos de medicamentos solo con las columnas correctas
-    # Asegúrate de usar las mismas columnas que usaste para entrenar el modelo
-    X = data[['age', 'previous_hospitalizations', 'previous_medication_cost']]  # Usa las mismas columnas que en el entrenamiento
-    data['costo_medico_predicho'] = random_forest_model.predict(X)
+    # Realizar la predicción de costos de medicamentos
+    X = data[['age', 'previous_hospitalizations', 'previous_consultations']]  # Deben coincidir con las que usaste para entrenar
+    data['costo_medico_predicho'] = random_forest_model_costos.predict(X)
 
     # Agrupar los costos proyectados por región
     costos_por_region = data.groupby('region')['costo_medico_predicho'].sum().reset_index()
@@ -368,16 +340,63 @@ def costos_medicos_proyectados(request):
         color='grupo_etario'
     )
 
+    # Depuración: Log para revisar los gráficos generados
+    logging.debug(f'fig_region HTML: {fig_region.to_html(full_html=False)}')
+    logging.debug(f'fig_edad HTML: {fig_edad.to_html(full_html=False)}')
+
     # Renderizar los gráficos en la plantilla
     return render(request, 'gestion_datos/costos_medicos.html', {
-        'fig_region': fig_region.to_html(full_html=False),
-        'fig_edad': fig_edad.to_html(full_html=False)
+        'costos_por_region': costos_por_region.to_dict(orient='records'),
+        'costos_por_edad': costos_por_edad.to_dict(orient='records'),
+        'graph_region': fig_region.to_html(full_html=False),
+        'graph_edad': fig_edad.to_html(full_html=False),
     })
 
 
+# -------------------------------
+# Costos Totales Proyectados
+# -------------------------------
+def costos_totales_proyectados(request):
+    """
+    Predice los costos totales proyectados de cada afiliado, sumando los costos de hospitalización y medicamentos.
+    """
+    # Cargar los modelos previamente entrenados
+    logistic_model = joblib.load('logistic_model.pkl')  # Modelo para hospitalización
+    random_forest_model_costos = joblib.load('random_forest_model_costos.pkl')  # Modelo para costos de medicamentos
 
+    # Obtener los datos de los afiliados
+    afiliados = Afiliado.objects.all()
+    data = pd.DataFrame(list(afiliados.values('affiliate_id', 'age', 'previous_hospitalizations', 'previous_consultations', 'previous_medication_cost', 'region')))
 
+    # Predicción de hospitalización
+    data['hospitalizacion_predicha'] = logistic_model.predict(
+        data[['age', 'previous_consultations', 'previous_medication_cost']])
+    
+    # Predicción de costos de medicamentos
+    X = data[['age', 'previous_hospitalizations', 'previous_consultations']]
+    data['costo_medico_predicho'] = random_forest_model_costos.predict(X)
 
+    # Sumar ambos costos: hospitalización y medicamentos para obtener el costo total proyectado
+    data['costo_total_proyectado'] = data['hospitalizacion_predicha'] * 5000 + data['costo_medico_predicho']  # Asumimos un costo fijo por hospitalización
+
+    # Agrupar por región y obtener la suma de los costos proyectados por cada región
+    costos_por_region = data.groupby('region')['costo_total_proyectado'].sum().reset_index()
+
+    # Crear un gráfico interactivo con Plotly
+    fig_region = px.bar(
+        costos_por_region,
+        x='region',
+        y='costo_total_proyectado',
+        title='Costos Totales Proyectados por Región',
+        labels={'costo_total_proyectado': 'Costo Total Proyectado (en $)', 'region': 'Región'},
+        color='region'
+    )
+
+    # Renderizar la plantilla con los datos y el gráfico
+    return render(request, 'gestion_datos/costos_totales_proyectados.html', {
+        'costos_por_region': costos_por_region.to_dict(orient='records'),
+        'graph_region': fig_region.to_html(full_html=False)
+    })
 
 
 def error_view(request, message="Algo salió mal."):

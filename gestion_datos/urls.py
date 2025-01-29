@@ -9,5 +9,6 @@ urlpatterns = [
     path('hospitalizaciones_proyectadas/', views.hospitalizaciones_proyectadas, name='hospitalizaciones_proyectadas'),
    path('costos_medicos/', views.costos_medicos_proyectados, name='costos_medicos'),
     path('exportar_predicciones/', views.exportar_predicciones, name='exportar_predicciones'),
+    path('costos_totales_proyectados/', views.costos_totales_proyectados, name='costos_totales_proyectados'),
     path('error/', views.error_view, name='error'),
 ]
