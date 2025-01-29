@@ -2,10 +2,10 @@ import os
 from pathlib import Path
 
 
-PORT = os.getenv('PORT', '8000')  # Render asigna un puerto dinámico
+PORT = os.getenv('PORT', '8000') 
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings
@@ -92,7 +92,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  # Path to the static folder in the project root
+    BASE_DIR / "static", 
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"

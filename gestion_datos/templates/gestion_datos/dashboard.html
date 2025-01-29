@@ -116,10 +116,9 @@
             font-size: 18px;
             color: #2c3e50;
             font-weight: 400;
-            white-space: normal; /* Allow the text to wrap */
+            white-space: normal; 
         }
 
-        /* Affiliate List Container Styling (Modern Design) */
         .affiliate-list-container {
             margin-top: 20px;
             background-color: #ffffff;
@@ -195,7 +194,7 @@
             background-color: #16a085;
         }
 
-        /* Responsive Styles */
+        /* Responsive  */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -251,14 +250,14 @@
     <div class="main-content">
         <h1>Bienvenido a ProGISS</h1>
 
-        <!-- Writing Animation in Container -->
+    
         <div class="typing-container" id="description-container">
             <div id="project-description" class="typing-animation">
-                <!-- This text will be written out using JavaScript -->
+        
             </div>
         </div>
 
-        <!-- Affiliate List Table (Initially Hidden) -->
+    
         <div class="affiliate-list-container" id="affiliate-list">
             <form method="post" action="{% url 'exportar_predicciones' %}">
                 {% csrf_token %}
@@ -295,10 +294,10 @@
     </div>
 
     <script>
-        // Text to be displayed
+        // Texto de presentacion
         const text = "ProGISS es un sistema inteligente de gestión de seguros de salud que utiliza tecnologías avanzadas como la inteligencia artificial y el análisis predictivo para optimizar la cobertura de salud de los afiliados. Este sistema permite la segmentación de riesgos, la predicción de hospitalizaciones y la estimación de costos médicos, mejorando la calidad del servicio y reduciendo costos innecesarios. Además, anticipa las necesidades de atención médica, garantizando una cobertura eficiente, justa y sostenible para los afiliados.";
 
-        // Function to animate the typing effect
+        // animacion
         function typeText(elementId, text, speed) {
             let i = 0;
             let element = document.getElementById(elementId);
@@ -312,15 +311,15 @@
             type();
         }
 
-        // Start the typing animation
+
         typeText('project-description', text, 50);
 
-        // Toggle Affiliate List
+
         function toggleAffiliateList() {
             var affiliateList = document.getElementById("affiliate-list");
             var descriptionContainer = document.getElementById("description-container");
 
-            // Toggle visibility of affiliate list and description
+
             if (affiliateList.style.display === "none" || affiliateList.style.display === "") {
                 affiliateList.style.display = "block";
                 affiliateList.classList.add('active');

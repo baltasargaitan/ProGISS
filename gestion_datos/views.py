@@ -310,13 +310,13 @@ def costos_medicos_proyectados(request):
     print(f"Datos de afiliados: {data.head()}")
 
     # Realizar la predicción de costos de medicamentos
-    X = data[['age', 'previous_hospitalizations', 'previous_consultations']]  # Deben coincidir con las que usaste para entrenar
+    X = data[['age', 'previous_hospitalizations', 'previous_consultations']]  
     data['costo_medico_predicho'] = random_forest_model_costos.predict(X)
 
     # Agrupar los costos proyectados por región
     costos_por_region = data.groupby('region')['costo_medico_predicho'].sum().reset_index()
 
-    # Crear el gráfico de costos de medicamentos proyectados por región
+    # Crear el gráfico de costos de medicamentos proyectados por regiónn
     fig_region = px.bar(
         costos_por_region,
         x='region',
@@ -400,4 +400,4 @@ def costos_totales_proyectados(request):
 
 
 def error_view(request, message="Algo salió mal."):
-    return render(request, 'error.html', {'message': message})
+    return render(request, 'error.html', {'message': message}) # vista por si salta un error , recordar implementar en las demas vistas...
