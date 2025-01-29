@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
 
+
+PORT = os.getenv('PORT', '8000')  # Render asigna un puerto dinámico
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
