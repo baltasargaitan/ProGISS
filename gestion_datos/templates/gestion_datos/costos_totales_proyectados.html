@@ -132,28 +132,32 @@
     <div class="container">
         <h1>Costos Totales Proyectados</h1>
 
-        <!-- Resumen de costos proyectados por región -->
+        <!-- Resumen de costos proyectados por plan -->
         <div class="summary">
             <div class="card">
-                <h2>{{ region1_total }}</h2>
-                <p>Total proyectado - Región 1</p>
+                <h2>{{ plan_basico_total }}</h2>
+                <p>Total proyectado - Plan Básico</p>
             </div>
             <div class="card">
-                <h2>{{ region2_total }}</h2>
-                <p>Total proyectado - Región 2</p>
+                <h2>{{ plan_regular_total }}</h2>
+                <p>Total proyectado - Plan Regular</p>
             </div>
             <div class="card">
-                <h2>{{ region3_total }}</h2>
-                <p>Total proyectado - Región 3</p>
+                <h2>{{ plan_avanzado_total }}</h2>
+                <p>Total proyectado - Plan Avanzado</p>
+            </div>
+            <div class="card">
+                <h2>{{ plan_premium_total }}</h2>
+                <p>Total proyectado - Plan Premium</p>
             </div>
         </div>
 
-        <!-- Gráfico de costos totales proyectados por región -->
+        <!-- Gráfico de costos totales proyectados por plan -->
         <div class="chart-container">
             <h2>Distribución de Costos Totales Proyectados</h2>
             <div>
                 <!-- Aquí se inserta el gráfico interactivo -->
-                {{ graph_region|safe }}
+                {{ graph_plan|safe }}
             </div>
         </div>
 

@@ -55,9 +55,9 @@ def dashboard(request):
 # -------------------------------
 def consultas_categoria(request):
     """
-    Agrupa consultas médicas por región y grupo etario.
+    Agrupa consultas médicas por plan y grupo etario.
     """
-    consultas_por_region = Afiliado.objects.values('region').annotate(
+    consultas_por_plan = Afiliado.objects.values('plan').annotate(
         total_consultas=Sum('previous_consultations')
     )
 
@@ -68,7 +68,7 @@ def consultas_categoria(request):
     }
 
     return render(request, 'gestion_datos/consultas_categoria.html', {
-        'consultas_por_region': consultas_por_region,
+        'consultas_por_plan': consultas_por_plan,
         'grupos_etarios': grupos_etarios
     })
 
@@ -77,23 +77,24 @@ def consultas_categoria(request):
 # -------------------------------
 def hospitalizaciones_proyectadas(request):
     """
-    Predice hospitalizaciones futuras y las agrupa por región y grupo etario.
+    Predice hospitalizaciones futuras y las agrupa por plan y grupo etario.
     """
     logistic_model = joblib.load('logistic_model.pkl')
     afiliados = Afiliado.objects.all()
-    data = pd.DataFrame(list(afiliados.values('id', 'age', 'previous_consultations', 'previous_medication_cost', 'region')))
+    data = pd.DataFrame(list(afiliados.values('id', 'age', 'previous_consultations', 'previous_medication_cost', 'plan')))
 
     data['hospitalizacion_predicha'] = logistic_model.predict(
         data[['age', 'previous_consultations', 'previous_medication_cost']])
     
-    hospitalizaciones_por_region = data.groupby('region')['hospitalizacion_predicha'].sum().reset_index()
+    # Agrupar por plan en vez de región
+    hospitalizaciones_por_plan = data.groupby('plan')['hospitalizacion_predicha'].sum().reset_index()
 
-    fig_region = px.bar(
-        hospitalizaciones_por_region,
-        x='region',
+    fig_plan = px.bar(
+        hospitalizaciones_por_plan,
+        x='plan',
         y='hospitalizacion_predicha',
-        title='Hospitalizaciones Proyectadas por Región',
-        labels={'hospitalizacion_predicha': 'Hospitalizaciones Proyectadas', 'region': 'Región'}
+        title='Hospitalizaciones Proyectadas por Plan',
+        labels={'hospitalizacion_predicha': 'Hospitalizaciones Proyectadas', 'plan': 'Plan'}
     )
 
     data['grupo_etario'] = pd.cut(
@@ -109,13 +110,13 @@ def hospitalizaciones_proyectadas(request):
         labels={'hospitalizacion_predicha': 'Hospitalizaciones Proyectadas', 'grupo_etario': 'Grupo Etario'}
     )
 
-    graph_region = fig_region.to_html(full_html=False)
+    graph_plan = fig_plan.to_html(full_html=False)
     graph_grupo = fig_grupo.to_html(full_html=False)
 
     return render(request, 'gestion_datos/hospitalizaciones_proyectadas.html', {
-        'hospitalizaciones_por_region': hospitalizaciones_por_region.to_dict(orient='records'),
+        'hospitalizaciones_por_plan': hospitalizaciones_por_plan.to_dict(orient='records'),
         'hospitalizaciones_por_grupo': hospitalizaciones_por_grupo.to_dict(orient='records'),
-        'graph_region': graph_region,
+        'graph_plan': graph_plan,
         'graph_grupo': graph_grupo,
     })
 
@@ -294,36 +295,34 @@ import joblib
 import plotly.express as px
 import logging
 
+
 # -------------------------------
 # Costos Médicos Proyectados
 # -------------------------------
 def costos_medicos_proyectados(request):
     """
-    Predice los costos de medicamentos futuros y los agrupa por región y grupo etario.
+    Predice los costos de medicamentos futuros y los agrupa por plan y grupo etario.
     """
-    # Cargar el modelo entrenado para predecir costos de medicamentos
     random_forest_model_costos = joblib.load('random_forest_model_costos.pkl')
-
     # Obtener los datos de los afiliados
     afiliados = Afiliado.objects.all()
-    data = pd.DataFrame(list(afiliados.values('affiliate_id', 'age', 'previous_hospitalizations', 'previous_consultations', 'region')))
-    print(f"Datos de afiliados: {data.head()}")
+    data = pd.DataFrame(list(afiliados.values('affiliate_id', 'age', 'previous_hospitalizations', 'previous_consultations', 'plan')))
 
     # Realizar la predicción de costos de medicamentos
     X = data[['age', 'previous_hospitalizations', 'previous_consultations']]  
     data['costo_medico_predicho'] = random_forest_model_costos.predict(X)
 
-    # Agrupar los costos proyectados por región
-    costos_por_region = data.groupby('region')['costo_medico_predicho'].sum().reset_index()
+    # Agrupar los costos proyectados por plan
+    costos_por_plan = data.groupby('plan')['costo_medico_predicho'].sum().reset_index()
 
-    # Crear el gráfico de costos de medicamentos proyectados por regiónn
-    fig_region = px.bar(
-        costos_por_region,
-        x='region',
+    # Crear el gráfico de costos de medicamentos proyectados por plan
+    fig_plan = px.bar(
+        costos_por_plan,
+        x='plan',
         y='costo_medico_predicho',
-        title='Costos Proyectados de Medicamentos por Región',
+        title='Costos Proyectados de Medicamentos por Plan',
         labels={'costo_medico_predicho': 'Costo de Medicamentos Proyectado'},
-        color='region'
+        color='plan'
     )
 
     # Agrupar los costos proyectados por grupo de edad
@@ -340,18 +339,12 @@ def costos_medicos_proyectados(request):
         color='grupo_etario'
     )
 
-    # Depuración: Log para revisar los gráficos generados
-    logging.debug(f'fig_region HTML: {fig_region.to_html(full_html=False)}')
-    logging.debug(f'fig_edad HTML: {fig_edad.to_html(full_html=False)}')
-
-    # Renderizar los gráficos en la plantilla
-    return render(request, 'gestion_datos/costos_medicos.html', {
-        'costos_por_region': costos_por_region.to_dict(orient='records'),
+    return render(request, 'gestion_datos/costos_medicos_proyectados.html', {
+        'costos_por_plan': costos_por_plan.to_dict(orient='records'),
         'costos_por_edad': costos_por_edad.to_dict(orient='records'),
-        'graph_region': fig_region.to_html(full_html=False),
+        'graph_plan': fig_plan.to_html(full_html=False),
         'graph_edad': fig_edad.to_html(full_html=False),
     })
-
 
 # -------------------------------
 # Costos Totales Proyectados
@@ -366,7 +359,7 @@ def costos_totales_proyectados(request):
 
     # Obtener los datos de los afiliados
     afiliados = Afiliado.objects.all()
-    data = pd.DataFrame(list(afiliados.values('affiliate_id', 'age', 'previous_hospitalizations', 'previous_consultations', 'previous_medication_cost', 'region')))
+    data = pd.DataFrame(list(afiliados.values('affiliate_id', 'age', 'previous_hospitalizations', 'previous_consultations', 'previous_medication_cost', 'plan')))  # Cambié 'region' por 'plan'
 
     # Predicción de hospitalización
     data['hospitalizacion_predicha'] = logistic_model.predict(
@@ -379,23 +372,23 @@ def costos_totales_proyectados(request):
     # Sumar ambos costos: hospitalización y medicamentos para obtener el costo total proyectado
     data['costo_total_proyectado'] = data['hospitalizacion_predicha'] * 5000 + data['costo_medico_predicho']  # Asumimos un costo fijo por hospitalización
 
-    # Agrupar por región y obtener la suma de los costos proyectados por cada región
-    costos_por_region = data.groupby('region')['costo_total_proyectado'].sum().reset_index()
+    # Agrupar por plan y obtener la suma de los costos proyectados por cada plan
+    costos_por_plan = data.groupby('plan')['costo_total_proyectado'].sum().reset_index()  # Cambié 'region' por 'plan'
 
     # Crear un gráfico interactivo con Plotly
-    fig_region = px.bar(
-        costos_por_region,
-        x='region',
+    fig_plan = px.bar(
+        costos_por_plan,
+        x='plan',
         y='costo_total_proyectado',
-        title='Costos Totales Proyectados por Región',
-        labels={'costo_total_proyectado': 'Costo Total Proyectado (en $)', 'region': 'Región'},
-        color='region'
+        title='Costos Totales Proyectados por Plan',
+        labels={'costo_total_proyectado': 'Costo Total Proyectado (en $)', 'plan': 'Plan'},
+        color='plan'
     )
 
     # Renderizar la plantilla con los datos y el gráfico
     return render(request, 'gestion_datos/costos_totales_proyectados.html', {
-        'costos_por_region': costos_por_region.to_dict(orient='records'),
-        'graph_region': fig_region.to_html(full_html=False)
+        'costos_por_plan': costos_por_plan.to_dict(orient='records'),
+        'graph_plan': fig_plan.to_html(full_html=False)
     })
 
 

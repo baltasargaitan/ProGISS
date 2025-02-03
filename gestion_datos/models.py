@@ -12,8 +12,11 @@ class Afiliado(models.Model):
     enrolled_in_program = models.BooleanField()
     risk_score = models.FloatField()
 
+    # Nueva columna plan
+    plan = models.CharField(max_length=50, default="Básico")
+
     def __str__(self):
-        return f"{self.affiliate_id} - {self.region}"
+        return f"{self.affiliate_id} - {self.plan}"  # Cambié region por plan aquí, si es necesario
 
 
 '------------------------------------------------------------'

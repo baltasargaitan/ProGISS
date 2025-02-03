@@ -85,7 +85,6 @@
             margin-right: 10px;
         }
 
-
         @media (max-width: 768px) {
             .main-content {
                 padding: 20px;
@@ -100,9 +99,9 @@
         <h1>Hospitalizaciones Proyectadas</h1>
 
         <div class="content-container">
-            <h2>Hospitalizaciones Proyectadas por Región</h2>
+            <h2>Hospitalizaciones Proyectadas por Plan</h2>
             <div>
-                {{ graph_region|safe }}
+                {{ graph_plan|safe }}
             </div>
         </div>
 

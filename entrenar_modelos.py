@@ -1,8 +1,8 @@
 import os
 import django
 
-# Configura el entorno de Django antes de cualquier otra cosa
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pro_giss.settings')  # Ajusta 'pro_giss' si tu proyecto tiene otro nombre
+# Configuracion  entorno  Django 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pro_giss.settings') 
 django.setup()
 
 import joblib
@@ -53,7 +53,7 @@ def entrenar_random_forest_para_costos():
     data = pd.DataFrame(afiliados)
 
     # Variables de entrada (características)
-    X = data[['age', 'previous_hospitalizations', 'previous_consultations']]  # Agregar las características relevantes
+    X = data[['age', 'previous_hospitalizations', 'previous_consultations']]
     # Variable de salida (costo de medicamentos)
     y = data['previous_medication_cost']  # El costo de los medicamentos previos como objetivo
 
@@ -77,7 +77,7 @@ def entrenar_random_forest_para_costos_totales():
     df_afiliados = pd.DataFrame(afiliados)
     df_costos = pd.DataFrame(costos_estadisticas)
 
-    # Unir los datos de afiliados y costos usando el campo 'affiliate_id'
+    # Aca se unen los datos de afiliados y costos usando el campo 'affiliate_id'
     df = pd.merge(df_afiliados, df_costos, on="affiliate_id")
 
     # Características de entrada (X)
