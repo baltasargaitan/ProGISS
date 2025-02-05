@@ -279,21 +279,7 @@ def predicciones_cliente(request, id):
 # -------------------------------
 # Costos Médicos Proyectados
 # -------------------------------
-from django.shortcuts import render
-from .models import Afiliado
-import pandas as pd
-import joblib
-import plotly.express as px
 
-# -------------------------------
-# Costos Médicos Proyectados
-# -------------------------------
-from django.shortcuts import render
-from .models import Afiliado
-import pandas as pd
-import joblib
-import plotly.express as px
-import logging
 
 
 # -------------------------------
@@ -392,5 +378,85 @@ def costos_totales_proyectados(request):
     })
 
 
+
+
 def error_view(request, message="Algo salió mal."):
     return render(request, 'error.html', {'message': message}) # vista por si salta un error , recordar implementar en las demas vistas...
+
+
+
+
+
+
+import pandas as pd
+import plotly.express as px
+from sklearn.preprocessing import LabelEncoder
+import joblib
+from django.shortcuts import render
+from .models import EstudioProcedimiento, Afiliado
+
+def proyeccion_estudios(request):
+    """
+    Calcula la proyección de estudios usando el modelo RandomForest para cada tipo de estudio y plan.
+    """
+    # Cargar el modelo entrenado de Random Forest para la cantidad de estudios
+    modelo_estudios = joblib.load('random_forest_model_estudios.pkl')
+
+    # Consultamos los datos de los estudios y afiliados
+    estudios = EstudioProcedimiento.objects.all().values()
+    afiliados = Afiliado.objects.all().values()
+
+    # Convertimos a DataFrame
+    df_estudios = pd.DataFrame(estudios)
+    df_afiliados = pd.DataFrame(afiliados)
+
+    # Aseguramos que 'patient_id' y 'affiliate_id' tengan el mismo formato
+    df_estudios['patient_id'] = df_estudios['patient_id'].apply(lambda x: f"AF-{str(x).zfill(4)}")
+
+    # Realizamos el merge usando las claves
+    df = pd.merge(df_estudios, df_afiliados, left_on='patient_id', right_on='affiliate_id')
+
+    # Segmentar por edad
+    df['grupo_edad'] = pd.cut(df['age'], bins=[0, 18, 35, 50, 65, 100], labels=['0-18', '19-35', '36-50', '51-65', '66+'])
+
+    # Convertir variables categóricas
+    label_encoder = LabelEncoder()
+    df['plan'] = label_encoder.fit_transform(df['plan'])
+    df['grupo_edad'] = label_encoder.fit_transform(df['grupo_edad'])
+
+    # Características de entrada (X)
+    X = df[['age', 'plan', 'grupo_edad']]
+
+    # Predecir la cantidad de estudios
+    df['cantidad_estudios_predicha'] = modelo_estudios.predict(X)
+
+    # Agrupar por tipo de estudio y plan para la proyección de estudios
+    estudios_por_tipo = df.groupby(['study_type'])['cantidad_estudios_predicha'].sum().reset_index()
+    estudios_por_plan = df.groupby(['plan'])['cantidad_estudios_predicha'].sum().reset_index()
+
+    # Crear el gráfico de proyección de estudios por tipo de estudio
+    fig_tipo_estudio = px.bar(
+        estudios_por_tipo,
+        x='study_type',
+        y='cantidad_estudios_predicha',
+        title='Proyección de Estudios por Tipo de Estudio',
+        labels={'cantidad_estudios_predicha': 'Cantidad de Estudios Proyectados', 'study_type': 'Tipo de Estudio'}
+    )
+
+    # Crear el gráfico de proyección de estudios por plan
+    fig_plan = px.bar(
+        estudios_por_plan,
+        x='plan',
+        y='cantidad_estudios_predicha',
+        title='Proyección de Estudios por Plan',
+        labels={'cantidad_estudios_predicha': 'Cantidad de Estudios Proyectados', 'plan': 'Plan'}
+    )
+
+    # Convertir los gráficos a formato HTML
+    graph_tipo_estudio = fig_tipo_estudio.to_html(full_html=False)
+    graph_plan = fig_plan.to_html(full_html=False)
+
+    return render(request, 'gestion_datos/proyeccion_estudios.html', {
+        'graph_tipo_estudio': graph_tipo_estudio,
+        'graph_plan': graph_plan
+    })
