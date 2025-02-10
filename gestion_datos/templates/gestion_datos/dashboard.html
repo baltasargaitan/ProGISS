@@ -118,7 +118,6 @@
             font-weight: 400;
             white-space: normal; 
         }
-
         .affiliate-list-container {
             margin-top: 20px;
             background-color: #ffffff;
@@ -132,6 +131,8 @@
             position: relative;
             left: 10%;
             width: 70%;
+            max-height: 500px; /* Ajusta este valor según el espacio que desees */
+            overflow-y: auto; /* Habilita el scroll vertical */
         }
 
         .affiliate-list-container.active {
@@ -244,7 +245,7 @@
             <i class="fas fa-dollar-sign"></i> Ver Costos Totales Proyectados
         </a>
         <a href="{% url 'proyeccion_estudios' %}" class="btn">
-            <i class="fas fa-dollar-sign"></i> Estudios Proyectados
+            <i class="fas fa-chart-line"></i> Estudios Proyectados
         </a>
         
     </div>

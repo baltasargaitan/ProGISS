@@ -71,11 +71,19 @@
 
     <div class="container">
 
+        <!-- Información del afiliado -->
+        <div class="info">
+            <p><strong>Edad:</strong> {{ afiliado.age }} años</p>
+            <p><strong>Plan:</strong> {{ afiliado.plan }}</p>
+
+        </div>
+
         <!-- Predicciones -->
         <div class="predictions">
             <h2>Predicciones</h2>
             <p><strong>¿Hospitalización en el próximo año?</strong> {{ prediccion_hospitalizacion }}</p>
             <p><strong>Número estimado de consultas médicas:</strong> {{ prediccion_consultas }}</p>
+            <p><strong>Numero de estudios médicos predichos:</strong> {{ prediccion_estudios }}</p>  <!-- Mostrar los estudios predichos -->
         </div>
 
         <!-- Botón de regreso -->

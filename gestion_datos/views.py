@@ -2,7 +2,8 @@ import csv
 from django.shortcuts import render
 from django.http import HttpResponse
 from matplotlib import pyplot as plt
-from .models import Afiliado
+from sklearn.calibration import LabelEncoder
+from .models import Afiliado, EstudioProcedimiento
 from django.db.models import Sum, Count, Avg
 import pandas as pd
 import joblib
@@ -245,21 +246,23 @@ def segmentacion(request):
         'grafico_base64': image_base64
     })
 
-# -------------------------------
-# Predicciones para Cliente Específico
-# -------------------------------
+
 def predicciones_cliente(request, id):
     """
     Genera predicciones específicas para un afiliado basado en su ID.
     """
     try:
+        # Obtener el afiliado y sus datos
         afiliado = Afiliado.objects.get(id=id)
     except Afiliado.DoesNotExist:
         return HttpResponse("Afiliado no encontrado", status=404)
 
+    # Cargar los modelos entrenados
     logistic_model = joblib.load('logistic_model.pkl')
     random_forest_model_consultas = joblib.load('random_forest_model_consultas.pkl')
+    modelo_estudios = joblib.load('random_forest_model_estudios.pkl')
 
+    # Obtener los datos del afiliado para la predicción
     data = pd.DataFrame([{
         'age': afiliado.age,
         'previous_consultations': afiliado.previous_consultations,
@@ -267,19 +270,35 @@ def predicciones_cliente(request, id):
         'previous_medication_cost': afiliado.previous_medication_cost
     }])
 
+    # Realizar las predicciones
     prediccion_hospitalizacion = logistic_model.predict(data[['age', 'previous_consultations', 'previous_medication_cost']])[0]
     prediccion_consultas = random_forest_model_consultas.predict(data[['age', 'previous_hospitalizations', 'previous_medication_cost']])[0]
 
+    # Preparar los datos para la predicción de estudios médicos
+    data_estudios = {
+        'age': afiliado.age,
+        'plan': afiliado.plan,
+        'grupo_edad': pd.cut([afiliado.age], bins=[0, 18, 35, 50, 65, 100], labels=['0-18', '19-35', '36-50', '51-65', '66+'])[0]
+    }
+
+    # Convertir las variables categóricas
+    label_encoder = LabelEncoder()
+    data_estudios['plan'] = label_encoder.fit_transform([data_estudios['plan']])[0]
+    data_estudios['grupo_edad'] = label_encoder.fit_transform([data_estudios['grupo_edad']])[0]
+
+    # Convertir los datos en un DataFrame
+    df_estudios = pd.DataFrame([data_estudios])
+
+    # Realizar la predicción de estudios
+    prediccion_estudios = modelo_estudios.predict(df_estudios)
+
+    # Mostrar las predicciones junto con los datos del afiliado
     return render(request, 'gestion_datos/predicciones_cliente.html', {
         'afiliado': afiliado,
-        'prediccion_hospitalizacion': "Yes" if prediccion_hospitalizacion == 1 else "No",
-        'prediccion_consultas': round(prediccion_consultas, 2)
+        'prediccion_hospitalizacion': "Si" if prediccion_hospitalizacion == 1 else "No",
+        'prediccion_consultas': round(prediccion_consultas, 0),
+        'prediccion_estudios': round(prediccion_estudios[0],0)  # Tipo de estudio proyectado
     })
-
-# -------------------------------
-# Costos Médicos Proyectados
-# -------------------------------
-
 
 
 # -------------------------------
@@ -332,6 +351,7 @@ def costos_medicos_proyectados(request):
         'graph_edad': fig_edad.to_html(full_html=False),
     })
 
+
 # -------------------------------
 # Costos Totales Proyectados
 # -------------------------------
@@ -379,21 +399,9 @@ def costos_totales_proyectados(request):
 
 
 
-
 def error_view(request, message="Algo salió mal."):
     return render(request, 'error.html', {'message': message}) # vista por si salta un error , recordar implementar en las demas vistas...
 
-
-
-
-
-
-import pandas as pd
-import plotly.express as px
-from sklearn.preprocessing import LabelEncoder
-import joblib
-from django.shortcuts import render
-from .models import EstudioProcedimiento, Afiliado
 
 def proyeccion_estudios(request):
     """
@@ -439,24 +447,24 @@ def proyeccion_estudios(request):
         estudios_por_tipo,
         x='study_type',
         y='cantidad_estudios_predicha',
-        title='Proyección de Estudios por Tipo de Estudio',
+
         labels={'cantidad_estudios_predicha': 'Cantidad de Estudios Proyectados', 'study_type': 'Tipo de Estudio'}
     )
-
-    # Crear el gráfico de proyección de estudios por plan
-    fig_plan = px.bar(
-        estudios_por_plan,
-        x='plan',
-        y='cantidad_estudios_predicha',
-        title='Proyección de Estudios por Plan',
-        labels={'cantidad_estudios_predicha': 'Cantidad de Estudios Proyectados', 'plan': 'Plan'}
-    )
-
     # Convertir los gráficos a formato HTML
     graph_tipo_estudio = fig_tipo_estudio.to_html(full_html=False)
-    graph_plan = fig_plan.to_html(full_html=False)
 
+
+    # Crear un diccionario con los nombres de los planes y sus cantidades de estudios
+    plan_names = {0: 'Básico', 1: 'Regular', 2: 'Avanzado', 3: 'Premium'}
+    estudios_por_plan['plan_nombre'] = estudios_por_plan['plan'].map(plan_names)
+
+    # Convertir la información de estudios por plan a un formato de texto para mostrar en el template
+    estudios_texto = {}
+    for _, row in estudios_por_plan.iterrows():
+        estudios_texto[row['plan_nombre']] = round(row['cantidad_estudios_predicha'],0)
+
+    # Pasar el diccionario con los estudios por plan (en texto) al template
     return render(request, 'gestion_datos/proyeccion_estudios.html', {
         'graph_tipo_estudio': graph_tipo_estudio,
-        'graph_plan': graph_plan
+        'total_estudios_por_plan': estudios_texto  # Aquí usamos el nombre esperado en el template
     })

@@ -13,14 +13,33 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
 from gestion_datos.models import Afiliado, CostosEstadisticas, EstudioProcedimiento
 
-# Función para entrenar el modelo de Regresión Logística
+from sklearn.utils import resample
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.utils import resample
+
 def entrenar_regresion_logistica():
+    # Obtener los datos de los afiliados
     afiliados = Afiliado.objects.all().values()
     data = pd.DataFrame(afiliados)
 
     # Crear la columna 'hospitalizacion_futura' como una estimación simple
     # Si el afiliado ha tenido hospitalizaciones en el pasado (columna 'previous_hospitalizations' > 0), asignamos 1 (hospitalización futura)
     data['hospitalizacion_futura'] = (data['previous_hospitalizations'] > 0).astype(int)
+
+    # Verificar la distribución de 'hospitalizacion_futura'
+    print("Distribución de 'hospitalizacion_futura':")
+    print(data['hospitalizacion_futura'].value_counts())
+
+    # Asegurarse de que haya datos para ambas clases (0 y 1)
+    if data['hospitalizacion_futura'].nunique() < 2:
+        print("Error: Los datos no tienen suficientes clases para entrenar el modelo.")
+        return None
+
+    # Eliminar filas con valores nulos
+    data = data.dropna(subset=['age', 'previous_consultations', 'previous_medication_cost'])
 
     # Características de entrada
     X = data[['age', 'previous_consultations', 'previous_medication_cost']]  # Características relevantes
@@ -29,12 +48,27 @@ def entrenar_regresion_logistica():
     # Dividir en entrenamiento y prueba
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+    # Si hay desbalance en las clases, realizar oversampling en la clase minoritaria
+    if y_train.value_counts().min() == 0:  # Si alguna clase no tiene ejemplos en el entrenamiento
+        minority_class = X_train[y_train == 0]
+        majority_class = X_train[y_train == 1]
+        
+        minority_class_upsampled = resample(minority_class, 
+                                            replace=True,     # Muestreo con reemplazo
+                                            n_samples=len(majority_class),  # Igual número de muestras que la clase mayoritaria
+                                            random_state=42)  # Para reproducibilidad
+        
+        # Combinar las clases balanceadas
+        X_train = pd.concat([majority_class, minority_class_upsampled])
+        y_train = pd.concat([y_train[majority_class.index], y_train[minority_class_upsampled.index]])
+
     # Entrenar el modelo de Regresión Logística
-    modelo = LogisticRegression()
+    modelo = LogisticRegression(max_iter=1000)
     modelo.fit(X_train, y_train)
 
     print("Modelo de Regresión Logística entrenado con éxito.")
     return modelo
+
 
 
 # Función para entrenar el modelo Random Forest para consultas previas
@@ -130,6 +164,13 @@ def entrenar_random_forest_para_costos_totales():
     else:
         print("No hay suficientes datos para entrenar el modelo.")
 
+import pandas as pd
+import joblib
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import LabelEncoder
+from gestion_datos.models import EstudioProcedimiento, Afiliado
+
 def entrenar_random_forest_para_estudios():
     # Consultamos los datos de los estudios y afiliados
     estudios = EstudioProcedimiento.objects.all().values()
@@ -141,16 +182,27 @@ def entrenar_random_forest_para_estudios():
 
     # Verificamos las columnas de los DataFrames
     print(df_estudios.columns)
+    print(df_afiliados.columns)
 
     # Asegúrate de que 'patient_id' y 'affiliate_id' tengan el mismo formato
     # Si 'patient_id' es numérico en los estudios y 'affiliate_id' es de tipo 'AF-XXXX' en los afiliados
     df_estudios['patient_id'] = df_estudios['patient_id'].apply(lambda x: f"AF-{str(x).zfill(4)}")
+    
+    # Verificar que ambos DataFrames tengan las columnas necesarias
+    if 'patient_id' not in df_estudios.columns or 'affiliate_id' not in df_afiliados.columns:
+        print("Error: Las columnas necesarias para el merge no están presentes.")
+        return None
 
     # Ahora realizamos el merge usando las claves de tipo 'AF-XXXX'
-    df = pd.merge(df_estudios, df_afiliados, left_on='patient_id', right_on='affiliate_id')
+    df = pd.merge(df_estudios, df_afiliados, left_on='patient_id', right_on='affiliate_id', how='inner')
 
     # Verificamos el tamaño de la data después del merge
     print(f"Cantidad de registros después de la combinación: {df.shape[0]}")
+
+    # Si no hay registros después del merge, interrumpimos
+    if df.shape[0] == 0:
+        print("No se encontraron registros coincidentes entre estudios y afiliados.")
+        return None
 
     # Generar la variable objetivo (cantidad de estudios)
     df['cantidad_estudios'] = df.groupby('affiliate_id')['procedure_id'].transform('count')
@@ -167,6 +219,11 @@ def entrenar_random_forest_para_estudios():
     X = df[['age', 'plan', 'grupo_edad']]  # Incluye variables de edad y plan
     # Variable objetivo (y): cantidad de estudios
     y = df['cantidad_estudios']
+
+    # Verificamos que X y y no estén vacíos
+    if X.empty or y.empty:
+        print("No hay datos suficientes para entrenar el modelo.")
+        return None
 
     # Dividir los datos en entrenamiento y prueba
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -198,5 +255,6 @@ if __name__ == '__main__':
     print("Modelo Random Forest para costos totales guardado como 'random_forest_model_costos_totales.pkl'.")
 
     modelo_estudios = entrenar_random_forest_para_estudios()
-    joblib.dump(modelo_estudios, 'random_forest_model_estudios.pkl')
-    print("Modelo Random Forest para cantidad de estudios guardado como 'random_forest_model_estudios.pkl'.")
+    if modelo_estudios:
+        joblib.dump(modelo_estudios, 'random_forest_model_estudios.pkl')
+        print("Modelo Random Forest para cantidad de estudios guardado como 'random_forest_model_estudios.pkl'.")
