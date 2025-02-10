@@ -2,7 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.dashboard, name='dashboard'),  # Vista principal
+    path('', views.inicio, name='inicio'),  # Vista principal
+    path('dashboard/', views.dashboard, name='dashboard'),  # Vista principal
     path('detalle/<int:id>/', views.detalle_afiliado, name='detalle_afiliado'),  # Detalle de un afiliado
     path('segmentacion/', views.segmentacion, name='segmentacion'),  # Vista para segmentación
     path('predicciones_cliente/<int:id>/', views.predicciones_cliente, name='predicciones_cliente'),  # Predicciones de un cliente específico

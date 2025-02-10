@@ -11,15 +11,45 @@ from io import BytesIO
 import base64
 from openpyxl import Workbook
 import plotly.express as px
+from django.core.paginator import Paginator
+
 
 # -------------------------------
 # Vista de inicio
 # -------------------------------
+
 def inicio(request):
     """
-    Página de bienvenida de la aplicación.
+    Página de bienvenida de la aplicación con animación y sidebar.
     """
-    return HttpResponse("<h1>Bienvenido a ProGISS</h1><p>Esta es la página inicial de la aplicación.</p>")
+    return render(request, 'gestion_datos/inicio.html')
+
+
+# -------------------------------
+# Dashboard Principal
+# -------------------------------
+
+def dashboard(request):
+    """
+    Muestra estadísticas generales y lista de afiliados.
+    """
+    afiliados = Afiliado.objects.all().order_by('id') 
+    
+    # Paginación
+    paginator = Paginator(afiliados, 100)  # 100 afiliados por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Estadísticas
+    stats = {
+        'total_afiliados': afiliados.count(),
+        'promedio_edad': afiliados.aggregate(Avg('age'))['age__avg'],
+        'consultas_totales': afiliados.aggregate(Sum('previous_consultations'))['previous_consultations__sum'],
+        'hospitalizaciones_totales': afiliados.aggregate(Sum('previous_hospitalizations'))['previous_hospitalizations__sum'],
+    }
+
+    return render(request, 'gestion_datos/dashboard.html', {'stats': stats, 'page_obj': page_obj})
+
 
 # -------------------------------
 # Vista de detalle de afiliado
@@ -35,21 +65,6 @@ def detalle_afiliado(request, id):
 
     return render(request, 'gestion_datos/detalle_afiliado.html', {'afiliado': afiliado})
 
-# -------------------------------
-# Dashboard Principal
-# -------------------------------
-def dashboard(request):
-    """
-    Muestra estadísticas generales y lista de afiliados.
-    """
-    afiliados = Afiliado.objects.all()
-    stats = {
-        'total_afiliados': afiliados.count(),
-        'promedio_edad': afiliados.aggregate(Avg('age'))['age__avg'],
-        'consultas_totales': afiliados.aggregate(Sum('previous_consultations'))['previous_consultations__sum'],
-        'hospitalizaciones_totales': afiliados.aggregate(Sum('previous_hospitalizations'))['previous_hospitalizations__sum'],
-    }
-    return render(request, 'gestion_datos/dashboard.html', {'stats': stats, 'afiliados': afiliados})
 
 # -------------------------------
 # Consultas por Categoría

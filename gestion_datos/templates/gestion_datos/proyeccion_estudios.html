@@ -68,6 +68,34 @@
             margin: 5px 0;
             color: #777;
         }
+        .back-button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin: 20px 0;
+            text-align: center;
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-button i {
+            margin-right: 10px;
+        }
 
         /* Responsive Styles */
         @media (max-width: 768px) {
@@ -100,6 +128,10 @@
                 </div>
             {% endfor %}
         </div>
-    </div>
+        <!-- Botón para volver al Inicio -->
+        <a href="{% url 'inicio' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Volver al Inicio
+        </a>   
+     </div>
 </body>
 </html>

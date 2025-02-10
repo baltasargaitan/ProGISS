@@ -20,70 +20,6 @@
             flex-direction: column;
         }
 
-        /* Sidebar Styles */
-        .sidebar {
-            width: 270px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #2c3e50;
-            padding-top: 30px;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding-left: 20px;
-            padding-right: 20px;
-        }
-
-        .sidebar h2 {
-            margin-bottom: 30px;
-            font-size: 22px;
-            color: #ecf0f1;
-        }
-
-        .sidebar a {
-            text-decoration: none;
-            padding: 15px;
-            background-color: #34495e;
-            margin: 10px 0;
-            color: white;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            align-items: center;
-            align-content: center;
-        }
-
-        .sidebar a:hover {
-            background-color: #1abc9c;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-        }
-
-        .sidebar .logo {
-            width: 60px;
-            height: 60px;
-            background-color: #ecf0f1;
-            border-radius: 50%;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-
-        }
-
-        .sidebar .logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-
         /* Main Content */
         .main-content {
             margin-left: 270px;
@@ -97,48 +33,24 @@
             color: #2c3e50;
             margin-bottom: 20px;
             text-align: center;
+            letter-spacing: 0.5px;
         }
 
-        /* Container for writing animation */
-        .typing-container {
-            max-width: 700px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            transition: all 0.3s ease-in-out;
-        }
 
-        .typing-animation {
-            font-size: 18px;
-            color: #2c3e50;
-            font-weight: 400;
-            white-space: normal; 
-        }
+
+        /* Estilo para ocultar la lista de afiliados por defecto */
         .affiliate-list-container {
+            display: block; /* Oculta la lista de afiliados al cargar la página */
             margin-top: 20px;
             background-color: #ffffff;
             padding: 10px;
             border-radius: 12px;
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-            display: none;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
             position: relative;
             left: 10%;
             width: 70%;
-            max-height: 500px; /* Ajusta este valor según el espacio que desees */
-            overflow-y: auto; /* Habilita el scroll vertical */
-        }
-
-        .affiliate-list-container.active {
-            display: block;
-            opacity: 1;
-            visibility: visible;
+            max-height: 500px;
+            overflow-y: auto;
         }
 
         .affiliate-button {
@@ -195,7 +107,56 @@
             background-color: #16a085;
         }
 
-        /* Responsive  */
+        /* Paginación */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            padding: 8px 16px;
+            margin: 0 5px;
+            background-color: #1abc9c;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .pagination a:hover {
+            background-color: #16a085;
+        }
+
+        .pagination .current {
+            background-color: #16a085;
+        }
+        .button-group {
+            clear: both;
+            text-align: center;
+            margin-top: 5%;
+        }
+
+        .button-group a {
+            text-decoration: none;
+            background-color: #6c63ff; /* Color morado moderno */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .button-group a:hover {
+            background-color: #5a54e4; /* Morado más oscuro */
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .button-group i {
+            margin-right: 10px;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -220,64 +181,30 @@
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-
-        <div class="logo">
-            <img src="{% static 'favicon.ico' %}" alt="ProGISS Logo">
-        </div>
-
-        <h2>ProGISS</h2>
-
-        <a href="javascript:void(0)" class="btn" onclick="toggleAffiliateList()">
-            <i class="fas fa-users"></i> Mostrar Afiliados
-        </a>
-        <a href="{% url 'hospitalizaciones_proyectadas' %}" class="btn">
-            <i class="fas fa-chart-line"></i> Ver Gráficos de Hospitalizaciones
-        </a>
-        <a href="{% url 'segmentacion' %}" class="btn">
-            <i class="fas fa-palette"></i> Ver Segmentación
-        </a>
-        <a href="{% url 'costos_medicos' %}" class="btn">
-            <i class="fas fa-dollar-sign"></i> Ver Costos Médicos
-        </a>
-        <a href="{% url 'costos_totales_proyectados' %}" class="btn">
-            <i class="fas fa-dollar-sign"></i> Ver Costos Totales Proyectados
-        </a>
-        <a href="{% url 'proyeccion_estudios' %}" class="btn">
-            <i class="fas fa-chart-line"></i> Estudios Proyectados
-        </a>
-        
-    </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <h1>Bienvenido a ProGISS</h1>
+        <h1>Afiliados</h1>
 
-    
-        <div class="typing-container" id="description-container">
-            <div id="project-description" class="typing-animation">
-        
-            </div>
-        </div>
-
-    
+        <!-- Lista de Afiliados -->
         <div class="affiliate-list-container" id="affiliate-list">
             <form method="post" action="{% url 'exportar_predicciones' %}">
                 {% csrf_token %}
                 <table class="affiliate-list">
                     <thead>
                         <tr>
-                            <th>Affiliate ID</th>
+                            <th>ID Afiliado</th>
                             <th>Region</th>
-                            <th>Actions</th>
+                            <th>Plan</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for afiliado in afiliados %}
+                        {% for afiliado in page_obj %}
                         <tr>
                             <td>{{ afiliado.affiliate_id }}</td>
                             <td>{{ afiliado.region }}</td>
+                            <td>{{ afiliado.plan }}</td>
                             <td class="action-buttons">
                                 <a href="{% url 'detalle_afiliado' afiliado.id %}">
                                     <i class="fas fa-info-circle"></i> Detalles
@@ -294,47 +221,26 @@
                     <i class="fas fa-file-export"></i> Exportar Predicciones (.xlsx)
                 </button>
             </form>
+
+            <!-- Paginación -->
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+                
+                <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="button-group">
+            <a href="{% url 'inicio' %}"><i class="fas fa-arrow-left"></i> Volver a inicio</a>
         </div>
     </div>
-
-    <script>
-        // Texto de presentacion
-        const text = "ProGISS es un sistema inteligente de gestión de seguros de salud que utiliza tecnologías avanzadas como la inteligencia artificial y el análisis predictivo para optimizar la cobertura de salud de los afiliados. Este sistema permite la segmentación de riesgos, la predicción de hospitalizaciones y la estimación de costos médicos, mejorando la calidad del servicio y reduciendo costos innecesarios. Además, anticipa las necesidades de atención médica, garantizando una cobertura eficiente, justa y sostenible para los afiliados.";
-
-        // animacion
-        function typeText(elementId, text, speed) {
-            let i = 0;
-            let element = document.getElementById(elementId);
-            function type() {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(type, speed);
-                }
-            }
-            type();
-        }
-
-
-        typeText('project-description', text, 50);
-
-
-        function toggleAffiliateList() {
-            var affiliateList = document.getElementById("affiliate-list");
-            var descriptionContainer = document.getElementById("description-container");
-
-
-            if (affiliateList.style.display === "none" || affiliateList.style.display === "") {
-                affiliateList.style.display = "block";
-                affiliateList.classList.add('active');
-                descriptionContainer.style.display = "none";
-            } else {
-                affiliateList.style.display = "none";
-                affiliateList.classList.remove('active');
-                descriptionContainer.style.display = "block";
-            }
-        }
-    </script>
 
 </body>
 </html>
