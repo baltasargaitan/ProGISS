@@ -121,6 +121,7 @@ def hospitalizaciones_proyectadas(request):
         'graph_grupo': graph_grupo,
     })
 
+
 # -------------------------------
 # Exportar Predicciones
 # -------------------------------
@@ -176,38 +177,6 @@ def exportar_predicciones(request):
 
     return HttpResponse("Invalid request method.", content_type="text/plain")
 
-# -------------------------------
-# Exportar Datos para BI
-# -------------------------------
-def exportar_datos_csv(request):
-    """
-    Exporta los datos de afiliados en formato CSV para uso en Power BI o Google Data Studio.
-    """
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="datos_afiliados.csv"'
-
-    writer = csv.writer(response)
-    writer.writerow([
-        'Affiliate_ID', 'Age', 'Sex', 'Region', 'Chronic_Condition',
-        'Previous_Consultations', 'Previous_Hospitalizations',
-        'Previous_Medication_Cost', 'Enrolled_in_Program', 'Risk_Score'
-    ])
-
-    for afiliado in Afiliado.objects.all():
-        writer.writerow([
-            afiliado.affiliate_id,
-            afiliado.age,
-            afiliado.sex,
-            afiliado.region,
-            "Yes" if afiliado.chronic_condition else "No",
-            afiliado.previous_consultations,
-            afiliado.previous_hospitalizations,
-            afiliado.previous_medication_cost,
-            "Yes" if afiliado.enrolled_in_program else "No",
-            afiliado.risk_score
-        ])
-
-    return response
 
 # -------------------------------
 # Segmentación de Afiliados
