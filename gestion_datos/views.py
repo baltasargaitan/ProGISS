@@ -10,9 +10,12 @@ import joblib
 from io import BytesIO
 import base64
 from openpyxl import Workbook
+import matplotlib
+matplotlib.use('Agg')
 import plotly.express as px
 from django.core.paginator import Paginator
-
+import matplotlib.pyplot as plt
+plt.switch_backend('Agg')
 
 # -------------------------------
 # Vista de inicio
@@ -200,22 +203,57 @@ def segmentacion(request):
     """
     Segmenta a los afiliados en niveles de riesgo según criterios predefinidos.
     """
-    riesgo_bajo = Afiliado.objects.filter(age__lt=40, chronic_condition=False).count()
-    riesgo_medio = Afiliado.objects.filter(chronic_condition=True, previous_consultations__gt=3).count()
+    # Calcular afiliados de riesgo alto (con condición crónica, más de 1 hospitalización y más de 1000 en costo de medicación)
     riesgo_alto = Afiliado.objects.filter(
         chronic_condition=True,
         previous_hospitalizations__gte=1,
-        previous_medication_cost__gt=1000
+        previous_medication_cost__gte=1000
     ).count()
+    print("Riesgo Alto:", riesgo_alto)
 
-    labels = ['Riesgo Bajo', 'Riesgo Medio', 'Riesgo Alto']
-    sizes = [riesgo_bajo, riesgo_medio, riesgo_alto]
-    colors = ['green', 'orange', 'red']
+    # Calcular afiliados de riesgo medio (con condición crónica y más de 2 consultas, sin ser alto)
+    riesgo_medio = Afiliado.objects.filter(
+        chronic_condition=True,
+        previous_consultations__gte=2
+    ).exclude(
+        chronic_condition=True,
+        previous_hospitalizations__gte=1,
+        previous_medication_cost__gte=1000  # Excluye a los que ya son altos
+    ).count()
+    print("Riesgo Medio:", riesgo_medio)
+    
+    # Calcular afiliados de riesgo bajo (menores de 40 años, sin condición crónica, sin ser medio o alto)
+    riesgo_bajo = Afiliado.objects.filter(
+        age__lt=40, 
+        chronic_condition=False
+    ).exclude(
+        chronic_condition=True,
+        previous_consultations__gte=2,  # Excluye a los que tienen más de 2 consultas (medio)
+        previous_hospitalizations__gte=1,  # Excluye a los que tienen hospitalizaciones (alto)
+        previous_medication_cost__gte=1000  # Excluye a los que tienen costos altos de medicación (alto)
+    ).count()
+    print("Riesgo Bajo:", riesgo_bajo)
 
+    # Verificar el total de afiliados
+    total_afiliados = Afiliado.objects.count()
+    print("Total Afiliados:", total_afiliados)
+
+    # Asegurarnos de que los porcentajes sumen al 100%
+    no_asignado = total_afiliados - (riesgo_bajo + riesgo_medio + riesgo_alto)
+    if no_asignado < 0: 
+        no_asignado = 0  # Evitar valores negativos en caso de error de cálculo
+
+    # Etiquetas y valores para el gráfico
+    labels = ['Riesgo Bajo', 'Riesgo Medio', 'Riesgo Alto', 'No Asignado']
+    sizes = [riesgo_bajo, riesgo_medio, riesgo_alto, no_asignado]
+    colors = ['green', 'orange', 'red', 'gray']  # Color para 'No Asignado'
+
+    # Crear el gráfico
     plt.figure(figsize=(6, 6))
     plt.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors)
     plt.title('Distribución de Niveles de Riesgo')
 
+    # Convertir la imagen a base64
     buffer = BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
@@ -227,7 +265,9 @@ def segmentacion(request):
         'riesgo_bajo': riesgo_bajo,
         'riesgo_medio': riesgo_medio,
         'riesgo_alto': riesgo_alto,
-        'grafico_base64': image_base64
+        'grafico_base64': image_base64,
+        'total_afiliados': total_afiliados,
+        'no_asignado': no_asignado
     })
 
 
