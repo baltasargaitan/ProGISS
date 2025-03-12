@@ -11,26 +11,21 @@ django.setup()
 # Importar modelos después de configurar Django
 from gestion_datos.models import Afiliado
 
-# Lista de costos previos de medicamentos
-costos_medicamentos = [
-    32405.8, 48791.3, 12451.2, 22204.5, 39806.7, 30211, 47125, 16903, 58008,
-    21205, 32405.8, 48791.3, 12451.2, 22204.5, 39806.7, 35646.38, 53670.43,
-    13696.32, 24424.95, 43787.37, 33232.1, 51837.5, 18593.3, 63808.8, 23325.5,
-    35646.38, 53670.43, 13696.32, 24424.95, 43787.37, 31543.2, 42986.7, 16204.5,
-    18768.9, 47631.2, 29873.4, 50324.7, 11208.9, 32051.1, 21105.4, 58764.2,
-    28767.7, 41501.3, 15453.4, 49002.2, 13004.4, 37506.8, 20053.3, 46988.8,
-    15009.9, 2000.5, 15000, 5000, 8000, 12000, 1500, 11000, 3000, 2500, 13000,
-    3500, 15000, 3200, 4800, 10000, 6000, 1800, 14000, 2200, 9000, 3000, 4700,
-    11500, 7000, 13000, 2500, 8500, 12000, 11000, 8500, 10500, 3800, 9000,
-    2700, 12500, 2900, 11500, 8000, 4000, 13500, 3300, 4800, 11000, 14000,
-    2900, 4600, 8000, 2200, 11000, 9000
-]
+def calcular_nivel_riesgo(hospitalizations, consultations, medication_cost):
+    """
+    Calcula el puntaje de riesgo basado en hospitalizaciones, consultas previas y costo de medicación.
+    """
+    risk_score = (
+        (hospitalizations * 0.4) + 
+        (consultations * 0.3) + 
+        (medication_cost / 1000000 * 0.3)
+    )
+    return min(max(risk_score, 0), 1)  # Asegura que el riesgo esté entre 0 y 1
 
 def generar_afiliados_desde_ppt():
     """
     Genera afiliados en la base de datos basándose en las estadísticas del PPT.
     """
-    # Total de beneficiarios en 2019 según PPT
     total_afiliados = 8310  # Número exacto de afiliados
     proporcion_capital = 0.59  # 59% de afiliados en Capital
     
@@ -38,44 +33,76 @@ def generar_afiliados_desde_ppt():
     afiliados_interior = total_afiliados - afiliados_capital
     
     afiliados_generados = []
-    current_id = 1  # Empezamos con el primer ID
+    current_id = 1
     
-    def crear_afiliado(region, tiene_hospitalizacion=True):
-        nonlocal current_id
+    # Porcentajes para distribuir los afiliados en diferentes niveles de riesgo
+    porcentaje_riesgo_bajo = 0.90
+    porcentaje_riesgo_medio = 0.02
+    porcentaje_riesgo_alto = 0.08
+
+    # Cantidades de afiliados en cada categoría
+    total_riesgo_bajo = int(total_afiliados * porcentaje_riesgo_bajo)
+    total_riesgo_medio = int(total_afiliados * porcentaje_riesgo_medio)
+    total_riesgo_alto = int(total_afiliados * porcentaje_riesgo_alto)
+
+    contador_riesgo_bajo = contador_riesgo_medio = contador_riesgo_alto = 0
+
+    def crear_afiliado(region):
+        nonlocal current_id, contador_riesgo_bajo, contador_riesgo_medio, contador_riesgo_alto
         
-        affiliate_id = f"AF-{str(current_id).zfill(4)}"  # Formateamos el ID con ceros a la izquierda
+        affiliate_id = f"AF-{str(current_id).zfill(4)}"
+        chronic_condition = current_id > 5395
         
-        # Crear y devolver el afiliado
+        if contador_riesgo_bajo < total_riesgo_bajo:
+            # Riesgo bajo: pocas hospitalizaciones
+            previous_hospitalizations = 0
+            previous_consultations = max(0, random.gauss(2.0, 0.5))  # Pocas consultas
+            previous_medication_cost = random.uniform(0, 30000)  # Bajo costo de medicación
+            contador_riesgo_bajo += 1
+        elif contador_riesgo_medio < total_riesgo_medio:
+            # Riesgo medio: hospitalizaciones de 1-2, algunas consultas y medicación moderada
+            previous_hospitalizations = random.choice([1, 2])
+            previous_consultations = max(0, random.gauss(3.45, 1))  # Promedio de consultas
+            previous_medication_cost = random.uniform(30000, 100000)  # Costo moderado de medicación
+            contador_riesgo_medio += 1
+        elif contador_riesgo_alto < total_riesgo_alto:
+            # Riesgo alto: muchas hospitalizaciones, muchas consultas y alto costo de medicación
+            previous_hospitalizations = random.randint(5, 10)
+            previous_consultations = max(0, random.gauss(7.0, 2))  # Más consultas
+            previous_medication_cost = random.uniform(100000, 1000000)  # Alto costo de medicación
+            contador_riesgo_alto += 1
+        else:
+            # Si ya se alcanzaron los límites de riesgo, asignar riesgo bajo por defecto
+            previous_hospitalizations = 0
+            previous_consultations = max(0, random.gauss(2.0, 0.5))
+            previous_medication_cost = random.uniform(0, 30000)
+        
+        risk_score = calcular_nivel_riesgo(previous_hospitalizations, previous_consultations, previous_medication_cost)
+        
         afiliado = Afiliado(
-            id=current_id,  # Asignamos manualmente el ID
+            id=current_id,
             affiliate_id=affiliate_id,
-            age=random.randint(18, 80),
+            age=random.randint(0, 19) if current_id <= 2407 else random.randint(20, 45) if current_id <= 4807 else random.randint(46, 70),
             sex=random.choice(["Masculino", "Femenino"]),
+            chronic_condition=chronic_condition,
             region=region,
-            chronic_condition=random.choice([True, False]),
-            previous_consultations=random.gauss(3.45, 0.5),  # Promedio de 3.45 consultas/año
-            previous_hospitalizations=random.gauss(9.83, 1.0) if tiene_hospitalizacion else 0,
-            previous_medication_cost=random.choice(costos_medicamentos),
+            previous_consultations=previous_consultations,
+            previous_hospitalizations=previous_hospitalizations,
+            previous_medication_cost=previous_medication_cost,
             enrolled_in_program=random.choice([True, False]),
-            risk_score=random.uniform(0, 1),  # Puntaje de riesgo aleatorio
+            risk_score=risk_score,
             plan=random.choice(["Básico", "Regular", "Avanzado", "Premium"]),
         )
-        current_id += 1  # Incrementamos el ID para el siguiente afiliado
+        current_id += 1
         return afiliado
-    
-    # Crear afiliados para Capital
+
     for _ in range(afiliados_capital):
-        tiene_hospitalizacion = random.random() > 0.3  # 70% tendrán hospitalización, 30% no
-        afiliados_generados.append(crear_afiliado("Capital", tiene_hospitalizacion))
+        afiliados_generados.append(crear_afiliado("Capital"))
     
-    # Crear afiliados para Interior
     for _ in range(afiliados_interior):
-        tiene_hospitalizacion = random.random() > 0.3
-        afiliados_generados.append(crear_afiliado("Interior", tiene_hospitalizacion))
+        afiliados_generados.append(crear_afiliado("Interior"))
     
-    # Insertar afiliados en la base de datos
     Afiliado.objects.bulk_create(afiliados_generados)
     print(f"{len(afiliados_generados)} afiliados generados con éxito según datos del PPT.")
 
-# Llamar a la función para generar los afiliados
 generar_afiliados_desde_ppt()

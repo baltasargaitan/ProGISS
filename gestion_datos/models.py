@@ -11,7 +11,7 @@ class Afiliado(models.Model):
     previous_medication_cost = models.DecimalField(max_digits=10, decimal_places=2)
     enrolled_in_program = models.BooleanField()
     risk_score = models.FloatField()
-
+        
     # Nueva columna plan
     plan = models.CharField(max_length=50, default="Básico")
 

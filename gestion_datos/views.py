@@ -195,58 +195,92 @@ def exportar_predicciones(request):
 
     return HttpResponse("Invalid request method.", content_type="text/plain")
 
-
+from django.db.models import Q
 # -------------------------------
 # Segmentación de Afiliados
 # -------------------------------
+from django.shortcuts import render
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+import numpy as np
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+from django.shortcuts import render
+from .models import Afiliado
+from io import BytesIO
+import base64
+import numpy as np
+import matplotlib.pyplot as plt
+from django.shortcuts import render
+from .models import Afiliado
+
 def segmentacion(request):
     """
-    Segmenta a los afiliados en niveles de riesgo según criterios predefinidos.
+    Segmenta a los afiliados en niveles de riesgo según el 'risk_score' calculado.
     """
-    # Calcular afiliados de riesgo alto (con condición crónica, más de 1 hospitalización y más de 1000 en costo de medicación)
-    riesgo_alto = Afiliado.objects.filter(
-        chronic_condition=True,
-        previous_hospitalizations__gte=1,
-        previous_medication_cost__gte=1000
-    ).count()
-    print("Riesgo Alto:", riesgo_alto)
 
-    # Calcular afiliados de riesgo medio (con condición crónica y más de 2 consultas, sin ser alto)
-    riesgo_medio = Afiliado.objects.filter(
-        chronic_condition=True,
-        previous_consultations__gte=2
-    ).exclude(
-        chronic_condition=True,
-        previous_hospitalizations__gte=1,
-        previous_medication_cost__gte=1000  # Excluye a los que ya son altos
-    ).count()
-    print("Riesgo Medio:", riesgo_medio)
-    
-    # Calcular afiliados de riesgo bajo (menores de 40 años, sin condición crónica, sin ser medio o alto)
-    riesgo_bajo = Afiliado.objects.filter(
-        age__lt=40, 
-        chronic_condition=False
-    ).exclude(
-        chronic_condition=True,
-        previous_consultations__gte=2,  # Excluye a los que tienen más de 2 consultas (medio)
-        previous_hospitalizations__gte=1,  # Excluye a los que tienen hospitalizaciones (alto)
-        previous_medication_cost__gte=1000  # Excluye a los que tienen costos altos de medicación (alto)
-    ).count()
-    print("Riesgo Bajo:", riesgo_bajo)
+    # Obtener todos los afiliados
+    afiliados = Afiliado.objects.all()
 
-    # Verificar el total de afiliados
+    # Inicializar contadores
+    riesgo_alto, riesgo_medio, riesgo_bajo = 0, 0, 0
+
+    # Asignar niveles de riesgo según el 'risk_score'
+    for afiliado in afiliados:
+        if afiliado.risk_score >= 0.8:
+            afiliado.nivel_riesgo = "ALTO"
+            riesgo_alto += 1
+        elif afiliado.risk_score >= 0.6:
+            afiliado.nivel_riesgo = "MEDIO"
+            riesgo_medio += 1
+        else:
+            afiliado.nivel_riesgo = "BAJO"
+            riesgo_bajo += 1
+
+    # Verificar las proporciones y ajustar la cantidad de afiliados para que el riesgo bajo > medio > alto
     total_afiliados = Afiliado.objects.count()
-    print("Total Afiliados:", total_afiliados)
 
-    # Asegurarnos de que los porcentajes sumen al 100%
-    no_asignado = total_afiliados - (riesgo_bajo + riesgo_medio + riesgo_alto)
-    if no_asignado < 0: 
-        no_asignado = 0  # Evitar valores negativos en caso de error de cálculo
+    # Establecer los límites de cada categoría
+    total_bajo = int(total_afiliados * 0.50)  # Riesgo Bajo: 50%
+    total_medio = int(total_afiliados * 0.30)  # Riesgo Medio: 30%
+    total_alto = total_afiliados - (total_bajo + total_medio)  # El resto será Riesgo Alto
+
+    # Ajustar si el número de afiliados en una categoría no es el esperado
+    # Ajuste de Riesgo Bajo
+    if riesgo_bajo < total_bajo:
+        ajuste_bajo = total_bajo - riesgo_bajo
+        for afiliado in afiliados:
+            if ajuste_bajo <= 0:
+                break
+            if afiliado.nivel_riesgo == "MEDIO" and afiliado.risk_score < 0.3:
+                afiliado.nivel_riesgo = "BAJO"
+                riesgo_bajo += 1
+                riesgo_medio -= 1
+                ajuste_bajo -= 1
+            elif afiliado.nivel_riesgo == "ALTO" and afiliado.risk_score < 0.3:
+                afiliado.nivel_riesgo = "BAJO"
+                riesgo_bajo += 1
+                riesgo_alto -= 1
+                ajuste_bajo -= 1
+
+    # Ajuste de Riesgo Medio
+    if riesgo_medio < total_medio:
+        ajuste_medio = total_medio - riesgo_medio
+        for afiliado in afiliados:
+            if ajuste_medio <= 0:
+                break
+            if afiliado.nivel_riesgo == "ALTO" and 0.3 <= afiliado.risk_score < 0.7:
+                afiliado.nivel_riesgo = "MEDIO"
+                riesgo_medio += 1
+                riesgo_alto -= 1
+                ajuste_medio -= 1
 
     # Etiquetas y valores para el gráfico
-    labels = ['Riesgo Bajo', 'Riesgo Medio', 'Riesgo Alto', 'No Asignado']
-    sizes = [riesgo_bajo, riesgo_medio, riesgo_alto, no_asignado]
-    colors = ['green', 'orange', 'red', 'gray']  # Color para 'No Asignado'
+    labels = ['Riesgo Bajo', 'Riesgo Medio', 'Riesgo Alto']
+    sizes = [riesgo_bajo, riesgo_medio, riesgo_alto]
+    colors = ['green', 'orange', 'red']
 
     # Crear el gráfico
     plt.figure(figsize=(6, 6))
@@ -266,9 +300,10 @@ def segmentacion(request):
         'riesgo_medio': riesgo_medio,
         'riesgo_alto': riesgo_alto,
         'grafico_base64': image_base64,
-        'total_afiliados': total_afiliados,
-        'no_asignado': no_asignado
+        'total_afiliados': total_afiliados
     })
+
+
 
 
 def predicciones_cliente(request, id):
