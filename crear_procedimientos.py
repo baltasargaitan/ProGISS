@@ -13,41 +13,50 @@ django.setup()
 # Importar modelos después de configurar Django
 from gestion_datos.models import EstudioProcedimiento, Afiliado
 
-# Listado de estudios a usar
-study_types = ['RML', 'RTX', 'EM', 'ECGR', 'TCC', 'PSA']
+# Cantidades fijas de estudios a asignar
+cantidad_estudios = {
+    'RML': 16,   # RMN Lumbar (>20 años)
+    'RTX': 15,   # Rx Tórax (>20 años)
+    'EM': 29,    # Eco Mamaria (mujeres >40 años)
+    'ECG': 66,   # ECG (todas las edades)
+    'TCC': 15,   # TAC Cráneo (todas las edades)
+}
 
-# Generar estudios para los afiliados
-def generar_estudios_por_afiliado():
-    afiliados = Afiliado.objects.all()
-    for afiliado in afiliados:
-        # Asignar un número de estudios aleatorio, por ejemplo, entre 0 y 3
-        num_estudios = random.randint(0, 3)  # Ajusta según estadísticas reales
-        for _ in range(num_estudios):
-            # Seleccionar un tipo de estudio aleatorio
-            study_type = random.choice(study_types)
+# Función para seleccionar afiliados elegibles
+def seleccionar_afiliados(filtro, cantidad):
+    afiliados = list(Afiliado.objects.filter(**filtro))
+    return random.sample(afiliados, min(len(afiliados), cantidad))
 
-            # Si el estudio es "EM" (Ecografía Mamaria), asegurarse de que el afiliado sea mujer
-            if study_type == 'EM' and afiliado.sex != 'Femenino':
-                # Si el afiliado no es mujer, asignar un estudio diferente
-                study_type = random.choice([s for s in study_types if s != 'EM'])
+# Generar estudios con cantidades fijas
+def generar_estudios_controlados():
+    criterios = {
+        'RML': {'age__gt': 20},                  # RMN Lumbar (>20 años)
+        'RTX': {'age__gt': 20},                  # Rx Tórax (>20 años)
+        'EM': {'age__gt': 40, 'sex': 'Femenino'},# Eco Mamaria (>40 años, mujeres)
+        'ECG': {},                               # ECG (todas las edades)
+        'TCC': {},                               # TAC Cráneo (todas las edades)
+    }
 
-            # Fecha aleatoria dentro de un rango de fechas (últimos 90 días)
-            random_days = random.randint(1, 90)
-            requested_date = datetime.now() - timedelta(days=random_days)
-
+    for study_type, cantidad in cantidad_estudios.items():
+        afiliados_seleccionados = seleccionar_afiliados(criterios[study_type], cantidad)
+        
+        for afiliado in afiliados_seleccionados:
+            # Generar fecha aleatoria dentro de los últimos 90 días
+            requested_date = datetime.now() - timedelta(days=random.randint(1, 90))
+            
             # Estado aleatorio
             status = random.choice(['Completado', 'Pendiente', 'Rechazado'])
-
+            
             # Costo aleatorio
             cost = round(random.uniform(2000, 12000), 2)
-
-            # Cumplimiento con la directriz aleatoriamente
+            
+            # Cumplimiento con la directriz aleatorio
             compliance = random.choice([True, False])
-
-            # Crear un nuevo procedimiento para este afiliado con el ID de afiliado (no UUID)
+            
+            # Crear el estudio
             EstudioProcedimiento.objects.create(
-                procedure_id=f"PROC-{uuid4()}",  # UUID como procedure_id único
-                patient=afiliado,  # Relacionamos con el paciente (afiliado)
+                procedure_id=f"PROC-{uuid4()}",
+                patient=afiliado,
                 study_type=study_type,
                 requested_date=requested_date,
                 status=status,
@@ -55,7 +64,7 @@ def generar_estudios_por_afiliado():
                 compliance_with_guideline=compliance
             )
 
-    print(f"Se generaron estudios para {len(afiliados)} afiliados.")
+    print(f"Se han asignado los estudios según las cantidades predefinidas.")
 
-# Llamar a la función para generar los estudios
-generar_estudios_por_afiliado()
+# Ejecutar la función
+generar_estudios_controlados()

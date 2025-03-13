@@ -1,7 +1,7 @@
 import os
-import django
-import random
 
+import random
+import django
 # Establecer la variable de entorno DJANGO_SETTINGS_MODULE
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pro_giss.settings')
 
@@ -24,10 +24,10 @@ def calcular_nivel_riesgo(hospitalizations, consultations, medication_cost):
 
 def generar_afiliados_desde_ppt():
     """
-    Genera afiliados en la base de datos basándose en las estadísticas del PPT.
+    Genera afiliados en la base de datos asegurando que el 60% tenga plan Básico y el 40% plan Premium.
     """
-    total_afiliados = 8310  # Número exacto de afiliados
-    proporcion_capital = 0.59  # 59% de afiliados en Capital
+    total_afiliados = 8310
+    proporcion_capital = 0.59
     
     afiliados_capital = int(total_afiliados * proporcion_capital)
     afiliados_interior = total_afiliados - afiliados_capital
@@ -35,54 +35,67 @@ def generar_afiliados_desde_ppt():
     afiliados_generados = []
     current_id = 1
     
-    # Porcentajes para distribuir los afiliados en diferentes niveles de riesgo
     porcentaje_riesgo_bajo = 0.90
     porcentaje_riesgo_medio = 0.02
     porcentaje_riesgo_alto = 0.08
 
-    # Cantidades de afiliados en cada categoría
     total_riesgo_bajo = int(total_afiliados * porcentaje_riesgo_bajo)
     total_riesgo_medio = int(total_afiliados * porcentaje_riesgo_medio)
     total_riesgo_alto = int(total_afiliados * porcentaje_riesgo_alto)
 
     contador_riesgo_bajo = contador_riesgo_medio = contador_riesgo_alto = 0
+    
+    # Forzar cantidades de planes
+    total_basico = int(total_afiliados * 0.60)
+    total_premium = total_afiliados - total_basico
+
+    contador_basico = contador_premium = 0
 
     def crear_afiliado(region):
         nonlocal current_id, contador_riesgo_bajo, contador_riesgo_medio, contador_riesgo_alto
-        
+        nonlocal contador_basico, contador_premium
+
         affiliate_id = f"AF-{str(current_id).zfill(4)}"
+        age = random.randint(0, 19) if current_id <= 2407 else random.randint(20, 45) if current_id <= 4807 else random.randint(46, 70)
         chronic_condition = current_id > 5395
-        
+
         if contador_riesgo_bajo < total_riesgo_bajo:
-            # Riesgo bajo: pocas hospitalizaciones
-            previous_hospitalizations = 0
-            previous_consultations = max(0, random.gauss(2.0, 0.5))  # Pocas consultas
-            previous_medication_cost = random.uniform(0, 30000)  # Bajo costo de medicación
-            contador_riesgo_bajo += 1
-        elif contador_riesgo_medio < total_riesgo_medio:
-            # Riesgo medio: hospitalizaciones de 1-2, algunas consultas y medicación moderada
-            previous_hospitalizations = random.choice([1, 2])
-            previous_consultations = max(0, random.gauss(3.45, 1))  # Promedio de consultas
-            previous_medication_cost = random.uniform(30000, 100000)  # Costo moderado de medicación
-            contador_riesgo_medio += 1
-        elif contador_riesgo_alto < total_riesgo_alto:
-            # Riesgo alto: muchas hospitalizaciones, muchas consultas y alto costo de medicación
-            previous_hospitalizations = random.randint(5, 10)
-            previous_consultations = max(0, random.gauss(7.0, 2))  # Más consultas
-            previous_medication_cost = random.uniform(100000, 1000000)  # Alto costo de medicación
-            contador_riesgo_alto += 1
-        else:
-            # Si ya se alcanzaron los límites de riesgo, asignar riesgo bajo por defecto
             previous_hospitalizations = 0
             previous_consultations = max(0, random.gauss(2.0, 0.5))
             previous_medication_cost = random.uniform(0, 30000)
-        
+            contador_riesgo_bajo += 1
+        elif contador_riesgo_medio < total_riesgo_medio:
+            previous_hospitalizations = random.choice([1, 2])
+            previous_consultations = max(0, random.gauss(3.45, 1))
+            previous_medication_cost = random.uniform(30000, 100000)
+            contador_riesgo_medio += 1
+        elif contador_riesgo_alto < total_riesgo_alto:
+            previous_hospitalizations = random.randint(5, 10)
+            previous_consultations = max(0, random.gauss(7.0, 2))
+            previous_medication_cost = random.uniform(100000, 1000000)
+            contador_riesgo_alto += 1
+        else:
+            previous_hospitalizations = 0
+            previous_consultations = max(0, random.gauss(2.0, 0.5))
+            previous_medication_cost = random.uniform(0, 30000)
+
         risk_score = calcular_nivel_riesgo(previous_hospitalizations, previous_consultations, previous_medication_cost)
-        
+
+        # Asignación de planes con la condición del 80% de mayores de 40 años en plan Premium
+        if age > 40:
+            plan = "Premium" if random.random() < 0.80 else "Básico"
+        else:
+            plan = "Básico" if contador_basico < total_basico else "Premium"
+
+        if plan == "Básico":
+            contador_basico += 1
+        else:
+            contador_premium += 1
+
         afiliado = Afiliado(
             id=current_id,
             affiliate_id=affiliate_id,
-            age=random.randint(0, 19) if current_id <= 2407 else random.randint(20, 45) if current_id <= 4807 else random.randint(46, 70),
+            age=age,
             sex=random.choice(["Masculino", "Femenino"]),
             chronic_condition=chronic_condition,
             region=region,
@@ -91,7 +104,7 @@ def generar_afiliados_desde_ppt():
             previous_medication_cost=previous_medication_cost,
             enrolled_in_program=random.choice([True, False]),
             risk_score=risk_score,
-            plan=random.choice(["Básico", "Regular", "Avanzado", "Premium"]),
+            plan=plan,
         )
         current_id += 1
         return afiliado
