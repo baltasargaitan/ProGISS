@@ -10,188 +10,229 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
+                /* Global Reset */
+                * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Base styles */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Roboto', sans-serif;
-            display: flex;
-            background-color: #f4f5f7;
-            min-height: 100vh;
-            flex-direction: column;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: 270px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #2c3e50;
-            padding-top: 30px;
+            background-color: #1e1e2f;
             color: white;
             display: flex;
             flex-direction: column;
-            padding-left: 20px;
-            padding-right: 20px;
-        }
-
-        .sidebar h2 {
-            margin-bottom: 30px;
-            font-size: 22px;
-            color: #ecf0f1;
-        }
-
-        .sidebar a {
-            text-decoration: none;
-            padding: 15px;
-            background-color: #34495e;
-            margin: 10px 0;
-            color: white;
-            border-radius: 6px;
-            display: flex;
             align-items: center;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        .sidebar a:hover {
-            background-color: #1abc9c;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-        }
-
-        .sidebar .logo {
-            width: 60px;
-            height: 60px;
-            background-color: #ecf0f1;
-            border-radius: 50%;
-            margin-bottom: 20px;
-            display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
 
-        .sidebar .logo img {
+        .dashboard-container {
+            width: 90%;
+            max-width: 1200px;
+            text-align: center;
+            padding: 15px;
+        }
+
+        h1 {
+            font-size: 2.25rem; /* Usando rem para mejor escalabilidad */
+            font-weight: 700;
+            margin-bottom: 3.125rem;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Card styles */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+            margin-top: 1.25rem;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #2a2a40, #3d3d60);
+            padding: 1.25rem;
+            border-radius: 0.625rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            align-items: center;
+            align-content: center;
+            min-height: 200px; /* Asegura una altura mínima */
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .card i {
+            font-size: 2.5rem; /* Mejor escala para iconos */
+            margin-bottom: 2rem;
+            color: #1abc9c;
+        }
+
+        .card p {
+            font-size: 1.125rem; /* Escalando texto para mejor visibilidad */
+            font-weight: 500;
+            color: white;
+            text-align: center;
+            align-self:center;
+        }
+
+        /* Logo styles */
+        .logo {
+            background: linear-gradient(125deg, #5fe2e7, #3d3d60);
+            padding: 1.25rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: cell;
+            text-align: center;
+            max-width: 10rem; /* Limita el tamaño máximo del logo */
+            max-height: 10rem; /* Limita el tamaño máximo del logo */
+            margin: 0 auto;
+        }
+
+        .logo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             border-radius: 50%;
         }
 
-        /* Main Content */
-        .main-content {
-            margin-left: 270px;
-            padding: 20px;
-            flex-grow: 1;
+        /* Project info - presentación */
+        .project-info {
+            display: none;
+            background: linear-gradient(125deg, #5fe2e7, #3d3d60);
+            padding: 1.25rem;
+            border-radius: 0.625rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            max-width: 37.5rem;
+            margin: 1.25rem auto;
+            position: relative;
+            text-align: left;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
-        h1 {
-            font-size: 30px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            text-align: center;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Container for writing animation */
-        .typing-container {
-            max-width: 700px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            transition: all 0.3s ease-in-out;
+        /* Responsividad adicional para móviles y tabletas */
+        @media (max-width: 1024px) {
+            h1 { font-size: 1.875rem; } /* Reduciendo el tamaño del encabezado para tabletas */
+            .card-container { grid-template-columns: 1fr 1fr; } /* Dos columnas para tabletas */
         }
 
-        .typing-animation {
-            font-size: 18px;
-            color: #2c3e50;
-            font-weight: 400;
-            white-space: normal; 
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                padding-left: 10px;
+            h1 { font-size: 1.5rem; } /* Títulos más pequeños en móviles */
+            .card-container { grid-template-columns: 1fr; } /* Una sola columna */
+            .card { padding: 1rem; } /* Reducción de padding en tarjetas */
+            .logo { max-width: 8rem; max-height: 8rem; } /* Ajuste de tamaño de logo */
+            .project-info { max-width: 90%; margin: 0 auto; padding: 1rem; } /* Proyecto info más accesible */
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 0.625rem; /* Agregar un pequeño padding para mejorar el aspecto móvil */
             }
-
-            .main-content {
-                margin-left: 0;
+            .card {
+                padding: 0.875rem; /* Reduciendo el padding de las tarjetas para móviles */
             }
-
-            .typing-container {
-                padding: 10px;
+            .card i {
+                font-size: 2rem; /* Escala de iconos más pequeña */
+            }
+            .card p {
+                font-size: 1rem; /* Texto más pequeño para móviles */
             }
         }
+
     </style>
 </head>
 <body>
+    <div class="dashboard-container">
+        <h1>Bienvenido a ProGISS</h1>
+        <div class="card-container">
+            <a href="{% url 'dashboard' %}" class="card">
+                <i class="fas fa-users"></i>
+                <p>LISTADO DE AFILIADOS</p>
+            </a>
+            <a href="{% url 'segmentacion' %}" class="card">
+                <i class="fas fa-chart-pie"></i>
+                <p>SEGMENTACIÓN DE AFILIADOS</p>
+            </a>
+            <a href="{% url 'hospitalizaciones_proyectadas' %}" class="card">
+                <i class="fas fa-hospital"></i>
+                <p>HOSPITALIZACIONES PROYECTADAS</p>
+            </a>
+            <a href="{% url 'costos_medicos' %}" class="card">
+                <i class="fas fa-dollar-sign"></i>
+                <p>COSTOS MEDICOS PROYECTADOS</p>
+            </a>
+            <a href="{% url 'costos_totales_proyectados' %}" class="card">
+                <i class="fas fa-chart-line"></i>
+                <p>COSTOS TOTALES PROYECTADOS</p>
+            </a>
+            <a href="{% url 'proyeccion_estudios' %}" class="card">
+                <i class="fas fa-flask"></i>
+                <p>ESTUDIOS PROYECTADOS</p>
+            </a>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="logo">
-            <img src="{% static 'favicon.ico' %}" alt="ProGISS Logo">
+            <!-- Tarjeta para abrir descripción del proyecto -->
+            <div class="card" onclick="openProjectInfo()">
+                <i class="fas fa-info-circle"></i>
+                <p>¿ QUE ES PROGISS ?</p>
+            </div>
+
+            <div class="logo">
+                <img src="{% static 'favicon.ico' %}" alt="ProGISS Logo">
+            </div>
+
+
         </div>
-
-        <h2>ProGISS</h2>
-        <a href="{% url 'dashboard' %}">
-            <i class="fas fa-chart-line"></i> Ver Afiliados
-        </a>
-        <a href="{% url 'hospitalizaciones_proyectadas' %}">
-            <i class="fas fa-chart-line"></i> Ver Gráficos de Hospitalizaciones
-        </a>
-        <a href="{% url 'segmentacion' %}">
-            <i class="fas fa-palette"></i> Ver Segmentación
-        </a>
-        <a href="{% url 'costos_medicos' %}">
-            <i class="fas fa-dollar-sign"></i> Ver Costos Médicos
-        </a>
-        <a href="{% url 'costos_totales_proyectados' %}">
-            <i class="fas fa-dollar-sign"></i> Ver Costos Totales Proyectados
-        </a>
-        <a href="{% url 'proyeccion_estudios' %}">
-            <i class="fas fa-chart-line"></i> Estudios Proyectados
-        </a>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <h1>Bienvenido a ProGISS</h1>
+    <!-- Solapa del texto del proyecto -->
+    <div class="project-info" id="project-info">
 
-        <div class="typing-container" id="description-container">
-            <div id="project-description" class="typing-animation">
-            </div>
-        </div>
+        <p id="project-description"></p>
     </div>
 
     <script>
         // Texto de presentación
         const text = "ProGISS es un sistema inteligente de gestión de seguros de salud que utiliza tecnologías avanzadas como la inteligencia artificial y el análisis predictivo para optimizar la cobertura de salud de los afiliados. Este sistema permite la segmentación de riesgos, la predicción de hospitalizaciones y la estimación de costos médicos, mejorando la calidad del servicio y reduciendo costos innecesarios. Además, anticipa las necesidades de atención médica, garantizando una cobertura eficiente, justa y sostenible para los afiliados.";
 
+        let typingTimeout;
+
         function typeText(elementId, text, speed) {
             let i = 0;
             let element = document.getElementById(elementId);
+            element.innerHTML = ""; // Limpia el texto previo
+
             function type() {
                 if (i < text.length) {
                     element.innerHTML += text.charAt(i);
                     i++;
-                    setTimeout(type, speed);
+                    typingTimeout = setTimeout(type, speed);
                 }
             }
             type();
         }
 
-        typeText('project-description', text, 50);
-    </script>
+        function openProjectInfo() {
+            document.getElementById('project-info').style.display = 'block';
+            typeText('project-description', text, 60);
+        }
 
+    </script>
 </body>
 </html>
