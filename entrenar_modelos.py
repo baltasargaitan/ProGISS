@@ -1,39 +1,34 @@
 import os
 import django
-from sklearn.calibration import LabelEncoder
 
-# Configuracion  entorno  Django 
+
+# Configuración del entorno Django 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pro_giss.settings') 
 django.setup()
-
 import joblib
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.utils import resample
+from sklearn.preprocessing import LabelEncoder
 from gestion_datos.models import Afiliado, CostosEstadisticas, EstudioProcedimiento
 
-from sklearn.utils import resample
-
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.utils import resample
-
+# Función para entrenar el modelo de Regresión Logística para predecir hospitalización futura
 def entrenar_regresion_logistica():
+    """
+    Esta función entrena un modelo de Regresión Logística para predecir la hospitalización futura de un afiliado.
+    Utiliza las características de edad, consultas previas y costo de medicamentos previos, y genera la columna 
+    'hospitalizacion_futura' para entrenar el modelo.
+    """
     # Obtener los datos de los afiliados
     afiliados = Afiliado.objects.all().values()
     data = pd.DataFrame(afiliados)
 
     # Crear la columna 'hospitalizacion_futura' como una estimación simple
-    # Si el afiliado ha tenido hospitalizaciones en el pasado (columna 'previous_hospitalizations' > 0), asignamos 1 (hospitalización futura)
     data['hospitalizacion_futura'] = (data['previous_hospitalizations'] > 0).astype(int)
 
     # Verificar la distribución de 'hospitalizacion_futura'
-    print("Distribución de 'hospitalizacion_futura':")
-    print(data['hospitalizacion_futura'].value_counts())
-
-    # Asegurarse de que haya datos para ambas clases (0 y 1)
     if data['hospitalizacion_futura'].nunique() < 2:
         print("Error: Los datos no tienen suficientes clases para entrenar el modelo.")
         return None
@@ -42,23 +37,18 @@ def entrenar_regresion_logistica():
     data = data.dropna(subset=['age', 'previous_consultations', 'previous_medication_cost'])
 
     # Características de entrada
-    X = data[['age', 'previous_consultations', 'previous_medication_cost']]  # Características relevantes
-    y = data['hospitalizacion_futura']  # El objetivo es predecir hospitalización futura
+    X = data[['age', 'previous_consultations', 'previous_medication_cost']]
+    y = data['hospitalizacion_futura']
 
     # Dividir en entrenamiento y prueba
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Si hay desbalance en las clases, realizar oversampling en la clase minoritaria
-    if y_train.value_counts().min() == 0:  # Si alguna clase no tiene ejemplos en el entrenamiento
+    if y_train.value_counts().min() == 0:
         minority_class = X_train[y_train == 0]
         majority_class = X_train[y_train == 1]
         
-        minority_class_upsampled = resample(minority_class, 
-                                            replace=True,     # Muestreo con reemplazo
-                                            n_samples=len(majority_class),  # Igual número de muestras que la clase mayoritaria
-                                            random_state=42)  # Para reproducibilidad
-        
-        # Combinar las clases balanceadas
+        minority_class_upsampled = resample(minority_class, replace=True, n_samples=len(majority_class), random_state=42)
         X_train = pd.concat([majority_class, minority_class_upsampled])
         y_train = pd.concat([y_train[majority_class.index], y_train[minority_class_upsampled.index]])
 
@@ -69,10 +59,12 @@ def entrenar_regresion_logistica():
     print("Modelo de Regresión Logística entrenado con éxito.")
     return modelo
 
-
-
 # Función para entrenar el modelo Random Forest para consultas previas
 def entrenar_random_forest_para_consultas():
+    """
+    Esta función entrena un modelo de Random Forest para predecir las consultas previas realizadas por los afiliados,
+    utilizando características como la edad, hospitalizaciones previas y costos de medicamentos previos.
+    """
     afiliados = Afiliado.objects.all().values()
     data = pd.DataFrame(afiliados)
 
@@ -90,28 +82,31 @@ def entrenar_random_forest_para_consultas():
 
 # Función para entrenar el modelo Random Forest para costos de medicamentos
 def entrenar_random_forest_para_costos():
-    # Obtener los datos de los afiliados
+    """
+    Esta función entrena un modelo de Random Forest para predecir los costos de medicamentos de los afiliados, 
+    utilizando las características de edad, hospitalizaciones previas y consultas previas.
+    """
     afiliados = Afiliado.objects.all().values()
     data = pd.DataFrame(afiliados)
 
-    # Variables de entrada (características)
+    # Características de entrada
     X = data[['age', 'previous_hospitalizations', 'previous_consultations']]
-    # Variable de salida (costo de medicamentos)
-    y = data['previous_medication_cost']  # El costo de los medicamentos previos como objetivo
+    y = data['previous_medication_cost']
 
-    # Dividir el conjunto de datos en entrenamiento y prueba
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Entrenar el modelo de Random Forest
     modelo = RandomForestRegressor(n_estimators=100, random_state=42)
     modelo.fit(X_train, y_train)
 
     print("Modelo Random Forest para costos de medicamentos entrenado con éxito.")
     return modelo
 
-
+# Función para entrenar el modelo Random Forest para costos totales
 def entrenar_random_forest_para_costos_totales():
-    # Obtener los datos de los afiliados y costos
+    """
+    Esta función entrena un modelo de Random Forest para predecir los costos totales de salud, que incluyen 
+    medicamentos y procedimientos, basándose en las características de los afiliados y sus costos asociados.
+    """
     afiliados = Afiliado.objects.all().values()
     costos_estadisticas = CostosEstadisticas.objects.all().values()
 
@@ -121,36 +116,26 @@ def entrenar_random_forest_para_costos_totales():
 
     # Asegurarse de que 'affiliate_id' sea del mismo tipo en ambos DataFrames
     df_afiliados['affiliate_id'] = df_afiliados['affiliate_id'].astype(str)
-# Convertir los valores de 'affiliate_id' en df_costos al formato 'AF-<número>'
     df_costos['affiliate_id'] = df_costos['affiliate_id'].apply(lambda x: f"AF-{int(x):04d}")
 
-    # Ahora puedes hacer la combinación sin problemas
+    # Realizar el merge
     df = pd.merge(df_afiliados, df_costos, on="affiliate_id")
 
-    print(f"Cantidad de registros después de la combinación: {len(df)}")
-
-    print(df.isnull().sum())  # Para ver cuántos valores nulos hay
-
-    # Eliminar filas con valores nulos en las columnas necesarias
+    # Eliminar filas con valores nulos
     df = df.dropna(subset=['age', 'previous_consultations', 'previous_hospitalizations', 
                            'previous_medication_cost', 'risk_score', 'chronic_condition', 
                            'total_medication_cost', 'total_procedure_cost'])
 
     # Verificar si después de eliminar los nulos quedan suficientes datos para el entrenamiento
-    print(f"Número de muestras para entrenamiento: {len(df)}")
-
-    print("Valores de 'affiliate_id' en df_afiliados:", df_afiliados['affiliate_id'].unique())
-    print("Valores de 'affiliate_id' en df_costos:", df_costos['affiliate_id'].unique())
-
     if len(df) > 0:
         # Características de entrada (X)
         X = df[['age', 'previous_consultations', 'previous_hospitalizations', 
                 'previous_medication_cost', 'risk_score', 'chronic_condition']]
 
-        # Variable objetivo (y): Costo total de salud (medicación + procedimientos)
+        # Variable objetivo (y): Costo total de salud
         y = df['total_medication_cost'] + df['total_procedure_cost']
 
-        # Dividir los datos en conjuntos de entrenamiento y prueba
+        # Dividir los datos en entrenamiento y prueba
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, random_state=42)
 
         # Crear y entrenar el modelo de Random Forest
@@ -160,46 +145,26 @@ def entrenar_random_forest_para_costos_totales():
         # Guardar el modelo entrenado
         joblib.dump(modelo, 'random_forest_model_costos_totales.pkl')
         print("Modelo de Random Forest para costos totales guardado con éxito.")
-
     else:
         print("No hay suficientes datos para entrenar el modelo.")
 
-import pandas as pd
-import joblib
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import LabelEncoder
-from gestion_datos.models import EstudioProcedimiento, Afiliado
-
+# Función para entrenar el modelo Random Forest para estudios
 def entrenar_random_forest_para_estudios():
-    # Consultamos los datos de los estudios y afiliados
+    """
+    Esta función entrena un modelo de Random Forest para predecir la cantidad de estudios realizados por los afiliados, 
+    basándose en su edad y plan, utilizando los datos de estudios médicos y afiliados.
+    """
     estudios = EstudioProcedimiento.objects.all().values()
     afiliados = Afiliado.objects.all().values()
 
-    # Convertimos a DataFrame
+    # Convertir a DataFrame
     df_estudios = pd.DataFrame(estudios)
     df_afiliados = pd.DataFrame(afiliados)
 
-    # Verificamos las columnas de los DataFrames
-    print(df_estudios.columns)
-    print(df_afiliados.columns)
-
-    # Asegúrate de que 'patient_id' y 'affiliate_id' tengan el mismo formato
-    # Si 'patient_id' es numérico en los estudios y 'affiliate_id' es de tipo 'AF-XXXX' en los afiliados
+    # Realizar el merge entre estudios y afiliados
     df_estudios['patient_id'] = df_estudios['patient_id'].apply(lambda x: f"AF-{str(x).zfill(4)}")
-    
-    # Verificar que ambos DataFrames tengan las columnas necesarias
-    if 'patient_id' not in df_estudios.columns or 'affiliate_id' not in df_afiliados.columns:
-        print("Error: Las columnas necesarias para el merge no están presentes.")
-        return None
-
-    # Ahora realizamos el merge usando las claves de tipo 'AF-XXXX'
     df = pd.merge(df_estudios, df_afiliados, left_on='patient_id', right_on='affiliate_id', how='inner')
 
-    # Verificamos el tamaño de la data después del merge
-    print(f"Cantidad de registros después de la combinación: {df.shape[0]}")
-
-    # Si no hay registros después del merge, interrumpimos
     if df.shape[0] == 0:
         print("No se encontraron registros coincidentes entre estudios y afiliados.")
         return None
@@ -207,34 +172,24 @@ def entrenar_random_forest_para_estudios():
     # Generar la variable objetivo (cantidad de estudios)
     df['cantidad_estudios'] = df.groupby('affiliate_id')['procedure_id'].transform('count')
 
-    # Segmentar por edad
-    df['grupo_edad'] = pd.cut(df['age'], bins=[0, 18, 35, 50, 65, 100], labels=['0-18', '19-35', '36-50', '51-65', '66+'])
-
-    # Convertir las variables categóricas
+    # Convertir variables categóricas
     label_encoder = LabelEncoder()
     df['plan'] = label_encoder.fit_transform(df['plan'])
-    df['grupo_edad'] = label_encoder.fit_transform(df['grupo_edad'])
+    df['grupo_edad'] = label_encoder.fit_transform(pd.cut(df['age'], bins=[0, 18, 35, 50, 65, 100], labels=['0-18', '19-35', '36-50', '51-65', '66+']))
 
     # Características de entrada (X)
-    X = df[['age', 'plan', 'grupo_edad']]  # Incluye variables de edad y plan
-    # Variable objetivo (y): cantidad de estudios
+    X = df[['age', 'plan', 'grupo_edad']]
     y = df['cantidad_estudios']
-
-    # Verificamos que X y y no estén vacíos
-    if X.empty or y.empty:
-        print("No hay datos suficientes para entrenar el modelo.")
-        return None
 
     # Dividir los datos en entrenamiento y prueba
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Crear y entrenar el modelo Random Forest
+    # Crear y entrenar el modelo de Random Forest
     modelo = RandomForestRegressor(n_estimators=100, random_state=42)
     modelo.fit(X_train, y_train)
 
     print("Modelo Random Forest para predicción de cantidad de estudios entrenado con éxito.")
     return modelo
-
 
 # Entrenar y guardar los modelos
 if __name__ == '__main__':

@@ -514,7 +514,7 @@ def proyeccion_estudios(request):
 
 
     # Crear un diccionario con los nombres de los planes y sus cantidades de estudios
-    plan_names = {0: 'Básico', 1: 'Regular', 2: 'Avanzado', 3: 'Premium'}
+    plan_names = {0: 'Básico',1: 'Premium'}
     estudios_por_plan['plan_nombre'] = estudios_por_plan['plan'].map(plan_names)
 
     # Convertir la información de estudios por plan a un formato de texto para mostrar en el template
