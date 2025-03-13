@@ -206,18 +206,17 @@
 
         <p id="project-description"></p>
     </div>
-
     <script>
         // Texto de presentación
         const text = "ProGISS es un sistema inteligente de gestión de seguros de salud que utiliza tecnologías avanzadas como la inteligencia artificial y el análisis predictivo para optimizar la cobertura de salud de los afiliados. Este sistema permite la segmentación de riesgos, la predicción de hospitalizaciones y la estimación de costos médicos, mejorando la calidad del servicio y reduciendo costos innecesarios. Además, anticipa las necesidades de atención médica, garantizando una cobertura eficiente, justa y sostenible para los afiliados.";
-
+    
         let typingTimeout;
-
+    
         function typeText(elementId, text, speed) {
             let i = 0;
             let element = document.getElementById(elementId);
             element.innerHTML = ""; // Limpia el texto previo
-
+    
             function type() {
                 if (i < text.length) {
                     element.innerHTML += text.charAt(i);
@@ -227,12 +226,24 @@
             }
             type();
         }
-
+    
         function openProjectInfo() {
-            document.getElementById('project-info').style.display = 'block';
-            typeText('project-description', text, 60);
+            const projectInfo = document.getElementById('project-info');
+            
+            // Si el texto está visible, se oculta
+            if (projectInfo.style.display === 'block') {
+                projectInfo.style.display = 'none';
+                clearTimeout(typingTimeout);  // Detener el tipeo si se oculta
+            } else {
+                projectInfo.style.display = 'block';
+                typeText('project-description', text, 60);
+            }
         }
-
+    
+        // Agregar evento de clic al área del texto de presentación
+        document.getElementById('project-info-toggle').addEventListener('click', openProjectInfo);
     </script>
+    
+    
 </body>
 </html>
