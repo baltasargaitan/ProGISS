@@ -9,15 +9,30 @@
     <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+
+
     <style>
                 /* Global Reset */
-                * {
+         * {
             margin: 0;
-            padding: 0;
+            padding: ;
             box-sizing: border-box;
         }
+        header {
+            display: flexbox;
+            align-items: center;
+            text-align: center;
+            align-content: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 20px 0;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #5fe2e7, #3d3d60);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
 
-        /* Base styles */
         body {
             margin: 0;
             padding: 0;
@@ -39,10 +54,12 @@
         }
 
         h1 {
-            font-size: 2.25rem; /* Usando rem para mejor escalabilidad */
+            font-family: "Lexend Deca", sans-serif;
             font-weight: 700;
-            margin-bottom: 3.125rem;
-            animation: fadeIn 1s ease-in-out;
+            font-size: 2rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
         }
 
         /* Card styles */
@@ -52,6 +69,7 @@
             gap: 1.25rem;
             width: 100%;
             margin-top: 1.25rem;
+            padding: 1%
         }
 
         .card {
@@ -159,8 +177,9 @@
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <h1>Bienvenido a ProGISS</h1>
+
+        
+        <header><h1> ProGISS - Sistema Inteligente de Gestión de Salud</h1></header>
         <div class="card-container">
             <a href="{% url 'dashboard' %}" class="card">
                 <i class="fas fa-users"></i>
@@ -176,7 +195,7 @@
             </a>
             <a href="{% url 'costos_medicos' %}" class="card">
                 <i class="fas fa-dollar-sign"></i>
-                <p>COSTOS MEDICOS PROYECTADOS</p>
+                <p>COSTOS DE MEDICAMENTOS</p>
             </a>
             <a href="{% url 'costos_totales_proyectados' %}" class="card">
                 <i class="fas fa-chart-line"></i>
@@ -185,6 +204,10 @@
             <a href="{% url 'proyeccion_estudios' %}" class="card">
                 <i class="fas fa-flask"></i>
                 <p>ESTUDIOS PROYECTADOS</p>
+            </a>
+            <a href="{% url 'proyeccion_laboratorios' %}" class="card">
+                <i class="fas fa-flask"></i>
+                <p>LABORATORIOS PROYECTADOS</p>
             </a>
 
             <!-- Tarjeta para abrir descripción del proyecto -->
@@ -200,6 +223,28 @@
 
         </div>
     </div>
+    <footer style="
+    width: 100%;
+    background: linear-gradient(135deg, #2a2a40, #3d3d60);
+    color: #ccc;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    margin-top: 3rem;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+">
+    <p style="margin-bottom: 0.5rem;">
+        &copy; 2025 <strong>ProGISS</strong> - Sistema Inteligente de Gestión de Salud
+    </p>
+    <p>
+       Todos los derechos reservados.
+    </p>
+    <div style="margin-top: 0.5rem;">
+        <a href="https://github.com/baltasargaitan" style="color: #5fe2e7; text-decoration: none; margin: 0 0.5rem;"><i class="fab fa-github"></i> GitHub</a>
+        <a href="mailto:baltasargaitan12@gmail.com" style="color: #5fe2e7; text-decoration: none; margin: 0 0.5rem;"><i class="fas fa-envelope"></i> Contacto</a>
+    </div>
+</footer>
+
 
     <!-- Solapa del texto del proyecto -->
     <div class="project-info" id="project-info">
@@ -247,3 +292,6 @@
     
 </body>
 </html>
+
+
+
