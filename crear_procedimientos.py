@@ -13,34 +13,41 @@ django.setup()
 # Importar modelos después de configurar Django
 from gestion_datos.models import EstudioProcedimiento, Afiliado
 
-# Cantidades fijas de estudios a asignar
+# Cantidades totales de estudios por tipo (según la tabla proporcionada)
 cantidad_estudios = {
-    'RML': 16,   # RMN Lumbar (>20 años)
-    'RTX': 15,   # Rx Tórax (>20 años)
-    'EM': 29,    # Eco Mamaria (mujeres >40 años)
-    'ECG': 66,   # ECG (todas las edades)
-    'TCC': 15,   # TAC Cráneo (todas las edades)
+    'Radiografías': 3177,
+    'Ecografías': 3194,
+    'Mamografías': 667,
+    'Tomografías': 251,
+    'Resonancias': 298,
 }
 
-# Función para seleccionar afiliados elegibles
-def seleccionar_afiliados(filtro, cantidad):
-    afiliados = list(Afiliado.objects.filter(**filtro))
-    return random.sample(afiliados, min(len(afiliados), cantidad))
+# Criterios de selección por tipo de estudio
+criterios = {
+    'Radiografías': {},  # Todas las edades
+    'Ecografías': {},    # Todas las edades
+    'Mamografías': {'age__gt': 40, 'sex': 'Femenino'},  # Mujeres mayores de 40 años
+    'Tomografías': {},   # Todas las edades
+    'Resonancias': {},   # Todas las edades
+}
 
-# Generar estudios con cantidades fijas
-def generar_estudios_controlados():
-    criterios = {
-        'RML': {'age__gt': 20},                  # RMN Lumbar (>20 años)
-        'RTX': {'age__gt': 20},                  # Rx Tórax (>20 años)
-        'EM': {'age__gt': 40, 'sex': 'Femenino'},# Eco Mamaria (>40 años, mujeres)
-        'ECG': {},                               # ECG (todas las edades)
-        'TCC': {},                               # TAC Cráneo (todas las edades)
-    }
+# Generar estudios distribuidos proporcionalmente
+def generar_estudios_distribuidos():
+    estudios_no_asignados = 0  # Contador para estudios no asignados
 
-    for study_type, cantidad in cantidad_estudios.items():
-        afiliados_seleccionados = seleccionar_afiliados(criterios[study_type], cantidad)
+    for study_type, total_estudios in cantidad_estudios.items():
+        afiliados_seleccionados = list(Afiliado.objects.filter(**criterios[study_type]))
         
-        for afiliado in afiliados_seleccionados:
+        # Asegurarse de que haya suficientes afiliados para asignar estudios
+        if not afiliados_seleccionados:
+            print(f"No hay afiliados elegibles para {study_type}. Se omitirán {total_estudios} estudios.")
+            estudios_no_asignados += total_estudios
+            continue
+
+        for _ in range(total_estudios):
+            # Seleccionar un afiliado aleatorio (puede repetirse)
+            afiliado = random.choice(afiliados_seleccionados)
+            
             # Generar fecha aleatoria dentro de los últimos 90 días
             requested_date = datetime.now() - timedelta(days=random.randint(1, 90))
             
@@ -48,7 +55,7 @@ def generar_estudios_controlados():
             status = random.choice(['Completado', 'Pendiente', 'Rechazado'])
             
             # Costo aleatorio
-            cost = round(random.uniform(2000, 12000), 2)
+            cost = round(random.uniform(15000, 120000), 2)
             
             # Cumplimiento con la directriz aleatorio
             compliance = random.choice([True, False])
@@ -64,7 +71,7 @@ def generar_estudios_controlados():
                 compliance_with_guideline=compliance
             )
 
-    print(f"Se han asignado los estudios según las cantidades predefinidas.")
-
+    print(f"Se han distribuido los {sum(cantidad_estudios.values()) - estudios_no_asignados} estudios entre los afiliados.")
+    print(f"Estudios no asignados: {estudios_no_asignados}")
 # Ejecutar la función
-generar_estudios_controlados()
+generar_estudios_distribuidos()

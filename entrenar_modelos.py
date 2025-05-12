@@ -12,7 +12,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils import resample
 from sklearn.preprocessing import LabelEncoder
-from gestion_datos.models import Afiliado, CostosEstadisticas, EstudioProcedimiento
+from gestion_datos.models import Afiliado, CostosEstadisticas, EstudioProcedimiento, LaboratorioProcedimiento
 
 # Función para entrenar el modelo de Regresión Logística para predecir hospitalización futura
 def entrenar_regresion_logistica():
@@ -191,6 +191,48 @@ def entrenar_random_forest_para_estudios():
     print("Modelo Random Forest para predicción de cantidad de estudios entrenado con éxito.")
     return modelo
 
+def entrenar_random_forest_para_laboratorio():
+    """
+    Entrena un modelo de Random Forest para predecir la cantidad de procedimientos de laboratorio realizados por afiliados.
+    """
+    procedimientos = LaboratorioProcedimiento.objects.all().values()
+    afiliados = Afiliado.objects.all().values()
+
+    # Convertir a DataFrame
+    df_proc = pd.DataFrame(procedimientos)
+    df_afiliados = pd.DataFrame(afiliados)
+
+    # Hacer merge
+    df = pd.merge(df_proc, df_afiliados, left_on='patient_id', right_on='id', how='inner')
+
+    if df.empty:
+        print("No hay datos suficientes para entrenar.")
+        return None
+
+    # Generar variable objetivo
+    df['cantidad_procedimientos'] = df.groupby('patient_id')['procedure_id'].transform('count')
+
+    # Procesar variables categóricas
+    le = LabelEncoder()
+    df['plan'] = le.fit_transform(df['plan'])
+    df['grupo_edad'] = le.fit_transform(pd.cut(df['age'], bins=[0, 18, 35, 50, 65, 100], labels=['0-18', '19-35', '36-50', '51-65', '66+']))
+
+    # Variables de entrada y salida
+    X = df[['age', 'plan', 'grupo_edad']]
+    y = df['cantidad_procedimientos']
+
+    # Split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Entrenar modelo
+    modelo = RandomForestRegressor(n_estimators=100, random_state=42)
+    modelo.fit(X_train, y_train)
+
+    # Guardar modelo entrenado
+
+    return modelo
+
+
 # Entrenar y guardar los modelos
 if __name__ == '__main__':
     logistic_model = entrenar_regresion_logistica()
@@ -208,6 +250,11 @@ if __name__ == '__main__':
     random_forest_model_costos_totales = entrenar_random_forest_para_costos_totales()
     joblib.dump(random_forest_model_costos_totales, 'random_forest_model_costos_totales.pkl')
     print("Modelo Random Forest para costos totales guardado como 'random_forest_model_costos_totales.pkl'.")
+
+    modelo_laboratorio = entrenar_random_forest_para_laboratorio()
+    if modelo_laboratorio:
+        joblib.dump(modelo_laboratorio, 'random_forest_model_laboratorio.pkl')
+        print("Modelo Random Forest para laboratorio guardado como 'random_forest_model_laboratorio.pkl'.")
 
     modelo_estudios = entrenar_random_forest_para_estudios()
     if modelo_estudios:

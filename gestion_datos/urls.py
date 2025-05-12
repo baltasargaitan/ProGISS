@@ -11,6 +11,7 @@ urlpatterns = [
     path('costos_medicos/', views.costos_medicos_proyectados, name='costos_medicos'),
     path('exportar_predicciones/', views.exportar_predicciones, name='exportar_predicciones'),
     path('costos_totales_proyectados/', views.costos_totales_proyectados, name='costos_totales_proyectados'),
-    path('proyeccion_estudios/', views.proyeccion_estudios, name='proyeccion_estudios'),  # Ruta para las proyecciones de estudios
+    path('proyeccion_estudios/', views.proyeccion_estudios, name='proyeccion_estudios'),
+    path('proyeccion_laboratorios/', views.proyeccion_laboratorios, name='proyeccion_laboratorios'),  # Ruta para las proyecciones de estudios laboratorios
     path('error/', views.error_view, name='error'),
 ]

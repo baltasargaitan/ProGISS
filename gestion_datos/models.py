@@ -16,28 +16,17 @@ class Afiliado(models.Model):
     plan = models.CharField(max_length=50, default="Básico")
 
     def __str__(self):
-        return f"{self.affiliate_id} - {self.plan}"  # Cambié region por plan aquí, si es necesario
+        return f"{self.affiliate_id} - {self.plan}" 
 
 
 '------------------------------------------------------------'
 
 class EstudioProcedimiento(models.Model):
-    STUDY_TYPES = [
-        ('ECG', 'Electrocardiograma'),
-        ('RM', 'Resonancia Magnética'),
-        ('TAC', 'Tomografía Axial Computarizada'),
-        ('RX', 'Radiografía'),
-        ('RML', 'Resonancia Magnética Lumbar'),
-        ('RTX', 'Radiografía de Tórax de Rutina'),
-        ('EM', 'Ecografía Mamaria Anual'),
-        ('ECGR', 'Electrocardiograma de Rutina'),
-        ('TCC', 'Tomografía Computada de Cráneo'),
-        ('PSA', 'Test de PSA Sin Síntomas'),
-    ]
     
+    study_type = models.CharField(max_length=50, default="No especificado")
     procedure_id = models.CharField(max_length=20, unique=True)
     patient = models.ForeignKey(Afiliado, on_delete=models.CASCADE, related_name="procedures")
-    study_type = models.CharField(max_length=4, choices=STUDY_TYPES)
+    procedure_id = models.CharField(max_length=30)
     requested_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default='Pendiente')
     cost = models.DecimalField(max_digits=10, decimal_places=2)
@@ -45,6 +34,15 @@ class EstudioProcedimiento(models.Model):
 
     def __str__(self):
         return f"Estudio {self.study_type} - {self.patient.affiliate_id}"
+
+
+class LaboratorioProcedimiento(models.Model):
+    procedure_id = models.CharField(max_length=20, unique=True)
+    patient = models.ForeignKey(Afiliado, on_delete=models.CASCADE, related_name="labprocedures")
+    cost = models.DecimalField(max_digits=10, decimal_places=2)  
+    lab_type = models.CharField(max_length=50)
+    def __str__(self):
+        return f"{self.lab_type}"
 
 
 
@@ -58,6 +56,7 @@ class Medico(models.Model):
     
     def __str__(self):
         return f"Dr. {self.first_name} {self.last_name} - {self.specialty}"
+    
 
 '------------------------------------------------------------'
 class Auditoria(models.Model):
@@ -71,6 +70,7 @@ class Auditoria(models.Model):
     def __str__(self):
         return f"Auditoría {self.audit_id} - Estudio {self.procedure.study_type}"
     
+
 '------------------------------------------------------------'
 class CostosEstadisticas(models.Model):
     affiliate = models.ForeignKey(Afiliado, on_delete=models.CASCADE, related_name="cost_statistics")

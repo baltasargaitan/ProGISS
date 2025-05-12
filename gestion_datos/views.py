@@ -16,6 +16,16 @@ import plotly.express as px
 from django.core.paginator import Paginator
 import matplotlib.pyplot as plt
 plt.switch_backend('Agg')
+from django.shortcuts import render
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+import numpy as np
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+from django.shortcuts import render
+from gestion_datos.models import LaboratorioProcedimiento
 
 # -------------------------------
 # Vista de inicio
@@ -199,22 +209,6 @@ from django.db.models import Q
 # -------------------------------
 # Segmentación de Afiliados
 # -------------------------------
-from django.shortcuts import render
-import matplotlib.pyplot as plt
-import base64
-from io import BytesIO
-import numpy as np
-import matplotlib.pyplot as plt
-import base64
-from io import BytesIO
-from django.shortcuts import render
-from .models import Afiliado
-from io import BytesIO
-import base64
-import numpy as np
-import matplotlib.pyplot as plt
-from django.shortcuts import render
-from .models import Afiliado
 
 def segmentacion(request):
     """
@@ -461,7 +455,6 @@ def costos_totales_proyectados(request):
 def error_view(request, message="Algo salió mal."):
     return render(request, 'error.html', {'message': message}) # vista por si salta un error , recordar implementar en las demas vistas...
 
-
 def proyeccion_estudios(request):
     """
     Calcula la proyección de estudios usando el modelo RandomForest para cada tipo de estudio y plan.
@@ -497,33 +490,97 @@ def proyeccion_estudios(request):
     # Predecir la cantidad de estudios
     df['cantidad_estudios_predicha'] = modelo_estudios.predict(X)
 
-    # Agrupar por tipo de estudio y plan para la proyección de estudios
+    # Agrupar por tipo de estudio para la proyección de estudios
     estudios_por_tipo = df.groupby(['study_type'])['cantidad_estudios_predicha'].sum().reset_index()
-    estudios_por_plan = df.groupby(['plan'])['cantidad_estudios_predicha'].sum().reset_index()
+    estudios_por_tipo = estudios_por_tipo[estudios_por_tipo['study_type'] != 'ECG']
 
-    # Crear el gráfico de proyección de estudios por tipo de estudio
-    fig_tipo_estudio = px.bar(
-        estudios_por_tipo,
+    # Separar los estudios generales y los demás
+    estudios_generales = ['Ecografías', 'Mamografías', 'Radiografías', 'Resonancias', 'Tomografías']
+    df_generales = estudios_por_tipo[estudios_por_tipo['study_type'].isin(estudios_generales)]
+    df_otros = estudios_por_tipo[~estudios_por_tipo['study_type'].isin(estudios_generales)]
+
+    # Crear el gráfico de proyección de estudios generales
+    fig_generales = px.bar(
+        df_generales,
         x='study_type',
         y='cantidad_estudios_predicha',
-
+        title='Proyección de Estudios Generales',
         labels={'cantidad_estudios_predicha': 'Cantidad de Estudios Proyectados', 'study_type': 'Tipo de Estudio'}
     )
+
+    # Crear el gráfico de proyección de otros estudios
+    fig_otros = px.bar(
+        df_otros,
+        x='study_type',
+        y='cantidad_estudios_predicha',
+        title='Proyección de Otros Estudios',
+        labels={'cantidad_estudios_predicha': 'Cantidad de Estudios Proyectados', 'study_type': 'Tipo de Estudio'}
+    )
+
     # Convertir los gráficos a formato HTML
-    graph_tipo_estudio = fig_tipo_estudio.to_html(full_html=False)
+    graph_generales = fig_generales.to_html(full_html=False)
+    graph_otros = fig_otros.to_html(full_html=False)
 
-
-    # Crear un diccionario con los nombres de los planes y sus cantidades de estudios
-    plan_names = {0: 'Básico',1: 'Premium'}
-    estudios_por_plan['plan_nombre'] = estudios_por_plan['plan'].map(plan_names)
-
-    # Convertir la información de estudios por plan a un formato de texto para mostrar en el template
-    estudios_texto = {}
-    for _, row in estudios_por_plan.iterrows():
-        estudios_texto[row['plan_nombre']] = round(row['cantidad_estudios_predicha'],0)
-
-    # Pasar el diccionario con los estudios por plan (en texto) al template
     return render(request, 'gestion_datos/proyeccion_estudios.html', {
-        'graph_tipo_estudio': graph_tipo_estudio,
-        'total_estudios_por_plan': estudios_texto  # Aquí usamos el nombre esperado en el template
+        'graph_generales': graph_generales,
+        'graph_otros': graph_otros
+    })
+
+
+
+
+def proyeccion_laboratorios(request):
+    """
+    Calcula la proyección de procedimientos de laboratorio usando un modelo de RandomForest entrenado.
+    """
+
+    # Cargar el modelo entrenado
+    modelo = joblib.load('random_forest_model_laboratorio.pkl')
+
+    # Obtener datos de la base
+    procedimientos = LaboratorioProcedimiento.objects.all().values()
+    afiliados = Afiliado.objects.all().values()
+
+    # Convertir a DataFrame
+    df_proc = pd.DataFrame(procedimientos)
+    df_afiliados = pd.DataFrame(afiliados)
+
+    # Asegurar formato consistente para el merge
+    df_proc['patient_id'] = df_proc['patient_id'].apply(lambda x: f"AF-{str(x).zfill(4)}")
+
+    # Unir tablas
+    df = pd.merge(df_proc, df_afiliados, left_on='patient_id', right_on='affiliate_id')
+
+    # Crear grupo de edad
+    df['grupo_edad'] = pd.cut(df['age'], bins=[0, 18, 35, 50, 65, 100], labels=['0-18', '19-35', '36-50', '51-65', '66+'])
+
+    # Codificar variables categóricas
+    le_plan = LabelEncoder()
+    le_edad = LabelEncoder()
+    df['plan'] = le_plan.fit_transform(df['plan'])
+    df['grupo_edad'] = le_edad.fit_transform(df['grupo_edad'])
+
+    # Definir variables para predicción
+    X = df[['age', 'plan', 'grupo_edad']]
+    df['cantidad_predicha'] = modelo.predict(X)
+
+    # Agrupar por tipo de procedimiento
+    proyeccion = df.groupby('procedure_type')['cantidad_predicha'].sum().reset_index()
+
+    # Crear gráfico
+    fig = px.bar(
+        proyeccion,
+        x='procedure_type',
+        y='cantidad_predicha',
+        title='Proyección de Procedimientos de Laboratorio',
+        labels={
+            'procedure_type': 'Tipo de Procedimiento',
+            'cantidad_predicha': 'Cantidad Proyectada'
+        }
+    )
+
+    graph_html = fig.to_html(full_html=False)
+
+    return render(request, 'gestion_datos/proyeccion_laboratorios.html', {
+        'graph_laboratorios': graph_html
     })

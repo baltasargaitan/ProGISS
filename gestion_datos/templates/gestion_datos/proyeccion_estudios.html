@@ -36,38 +36,16 @@
             color: #6c63ff; /* Color morado moderno */
         }
 
-        /* Proyección de estudios por plan */
-        .plan-list {
-            margin-top: 40px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+        .chart-container {
+            margin-bottom: 40px;
         }
 
-        .plan-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease;
-            text-align: center;
-        }
-
-        .plan-card:hover {
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
-        }
-
-        .plan-card h3 {
+        h2 {
             font-size: 24px;
             color: #6c63ff;
-            margin: 10px 0;
+            margin-bottom: 20px;
         }
 
-        .plan-card p {
-            font-size: 18px;
-            margin: 5px 0;
-            color: #777;
-        }
         .back-button {
             background-color: #3498db;
             color: white;
@@ -109,25 +87,22 @@
     <div class="container">
         <h1>Proyección de Estudios</h1>
         
-        <!-- Gráfico de la proyección de estudios por tipo de estudio -->
+        <!-- Gráfico de estudios generales -->
         <div class="chart-container">
-            <h2>Proyección de Estudios por Tipo de Estudio</h2>
+            <h2>Proyección de Estudios Generales</h2>
             <div>
-                {{ graph_tipo_estudio|safe }}
+                {{ graph_generales|safe }}
             </div>
         </div>
 
-        <!-- Proyección de estudios por plan (en texto con estilo moderno) -->
-        <h2>Proyección de Estudios por Plan</h2>
-        <div class="plan-list">
-            
-            {% for plan, cantidad_estudios in total_estudios_por_plan.items %}
-                <div class="plan-card">
-                    <h3>{{ plan }}</h3>
-                    <p><strong>{{ cantidad_estudios }}</strong> estudios proyectados</p>
-                </div>
-            {% endfor %}
+        <!-- Gráfico de otros estudios -->
+        <div class="chart-container">
+            <h2>Proyección de Otros Estudios</h2>
+            <div>
+                {{ graph_otros|safe }}
+            </div>
         </div>
+
         <!-- Botón para volver al Inicio -->
         <a href="{% url 'inicio' %}" class="back-button">
             <i class="fas fa-arrow-left"></i> Volver al Inicio
